@@ -3,11 +3,14 @@ mod parse;
 
 fn main() {
 
-    let lexer = lex::Lexer{};
-    let tokens = lexer.lex(&std::string::String::from("main pub fn"));
+    let mut lexer = lex::Lexer{current: 0};
+    let tokens = lexer.lex(&std::string::String::from("+-*/ helo umm"));
 
-    let parser = parse::Parser{};
-    let ast = parser.parse(tokens);
+    let mut parser = parse::Parser{};
+    let _ast = parser.parse(tokens);
+
+    // todo generate
+
 
     println!("Hello, world!");
 }
