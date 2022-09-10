@@ -1,5 +1,6 @@
 
 #[derive(Debug)]
+#[warn(dead_code)]
 pub enum Token {
     END,
 
@@ -24,77 +25,91 @@ pub enum Token {
     IDENTIFIER(std::string::String)
 }
 
+impl std::fmt::Display for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        // Use `self.number` to refer to each positional data point.
+        write!(f, "{}", self)
+    }
+}
+
+
 pub struct Lexer {
-    pub current: usize
+    pub current: usize,
+    pub program: Box<std::string::String>,
+    pub tokens: Box<Vec<Token>>
 }
 
 impl Lexer {
-    pub fn lex(&mut self, program: &std::string::String) -> Box<Vec<Token>>{
 
-        let mut tokens = Box::new(vec!());
+    pub fn new() -> Lexer {
+        Lexer {
+            current: 0, 
+            program: Box::new(std::string::String::from("")),
+            tokens: Box::new(vec!())
+        }
+    }
 
-        println!("lexing {}.", &program);
+    pub fn lex(&mut self, program: Box<std::string::String>) {//-> Box<Vec<Token>>{
 
-        while !self.end(&program) {
+        self.program = program;
+
+
+        while !self.end() {
  
-            println!("counter {}.", self.current);
 
-
-            match program.chars().nth(self.current).unwrap() {
-                '+' => tokens.push(Token::PLUS),
-                '-' => tokens.push(Token::MINUS),
-                '*' => tokens.push(Token::STAR),
-                '/' => tokens.push(Token::DIV),
-                '{' => tokens.push(Token::LCURLY),
-                '}' => tokens.push(Token::RCURLY),
-                '(' => tokens.push(Token::LPAREN),
-                ')' => tokens.push(Token::RPAREN),
-                '[' => tokens.push(Token::LBRACKET),
-                ']' => tokens.push(Token::RBRACKET),
-                ',' => tokens.push(Token::COMMA),
-                ':' => tokens.push(Token::COLON),
-                ';' => tokens.push(Token::SEMICOLON),
+            match self.program.chars().nth(self.current).unwrap() {
+                '+' => self.tokens.push(Token::PLUS),
+                '-' => self.tokens.push(Token::MINUS),
+                '*' => self.tokens.push(Token::STAR),
+                '/' => self.tokens.push(Token::DIV),
+                '{' => self.tokens.push(Token::LCURLY),
+                '}' => self.tokens.push(Token::RCURLY),
+                '(' => self.tokens.push(Token::LPAREN),
+                ')' => self.tokens.push(Token::RPAREN),
+                '[' => self.tokens.push(Token::LBRACKET),
+                ']' => self.tokens.push(Token::RBRACKET),
+                ',' => self.tokens.push(Token::COMMA),
+                ':' => self.tokens.push(Token::COLON),
+                ';' => self.tokens.push(Token::SEMICOLON),
                 _ => {
                     // todo do identifier
-                    self.other(&mut tokens, &program);
+                    self.other();
                 }
             }
 
             self.current+=1;
 
         }
-
-        return tokens;
     }
 
-    fn end(&self, program: &std::string::String) -> bool {
-        return self.current >= program.chars().count();
+    fn end(&self) -> bool {
+        return self.current >= self.program.chars().count();
     }
 
-    fn other(&mut self, tokens: &mut Box<Vec<Token>>, program: &std::string::String) {
-        let c = program.chars().nth(self.current).unwrap();
+    fn other(&mut self) {
+        let c = self.program.chars().nth(self.current).unwrap();
         if c.is_digit(10) {
-            self.number(tokens, &program);
+            self.number();
         }else if c.is_alphabetic(){
-            self.identifier(tokens,&program);
+            self.identifier();
         }
     }
 
-    fn number(&mut self, tokens: &mut Box<Vec<Token>>, program: &std::string::String){
+    fn number(&mut self){
         let mut s = std::string::String::from("");
-        while !self.end(program) && program.chars().nth(self.current).unwrap().is_digit(10){
-            s.push(program.chars().nth(self.current).unwrap());
+        while !self.end() && self.program.chars().nth(self.current).unwrap().is_digit(10){
+            s.push(self.program.chars().nth(self.current).unwrap());
             self.current+=1;
         }
-        tokens.push(Token::NUMBER(s));
+        self.tokens.push(Token::NUMBER(s));
     }
 
-    fn identifier(&mut self, tokens: &mut Box<Vec<Token>>, program: &std::string::String){
+    fn identifier(&mut self){
         let mut s = std::string::String::from("");
-        while !self.end(program) && program.chars().nth(self.current).unwrap().is_alphabetic(){
-            s.push(program.chars().nth(self.current).unwrap());
+        while !self.end() && self.program.chars().nth(self.current).unwrap().is_alphabetic(){
+            s.push(self.program.chars().nth(self.current).unwrap());
             self.current+=1;
         }
-        tokens.push(Token::IDENTIFIER(s));
+        self.tokens.push(Token::IDENTIFIER(s));
     }
 }
