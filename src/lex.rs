@@ -1,5 +1,5 @@
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 #[warn(dead_code)]
 pub enum Token {
     END,
@@ -36,6 +36,7 @@ pub enum Token {
 pub struct Lexer {
     pub current: usize,
     pub program: Box<std::string::String>,
+    // todo this is bad practice
     pub tokens: Box<Vec<Token>>
 }
 
@@ -74,12 +75,19 @@ impl Lexer {
                 _ => {
                     // todo do identifier
                     self.other();
+                    continue;
                 }
             }
 
             self.current+=1;
 
         }
+
+
+        for token in self.tokens.iter() {
+            println!("token {:?}", token);
+        }
+
     }
 
     fn end(&self) -> bool {
