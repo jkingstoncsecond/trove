@@ -25,12 +25,12 @@ pub enum Token {
     IDENTIFIER(std::string::String)
 }
 
-impl std::fmt::Display for Token {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        // Use `self.number` to refer to each positional data point.
-        write!(f, "{}", self)
-    }
-}
+// impl std::fmt::Display for Token {
+//     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+//         // Use `self.number` to refer to each positional data point.
+//         write!(f, "{}", self)
+//     }
+// }
 
 
 pub struct Lexer {
