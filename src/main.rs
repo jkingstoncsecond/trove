@@ -6,15 +6,18 @@ mod generator;
 
 fn main() {
 
+    std::env::set_var("RUST_BACKTRACE", "1");
+
     let mut lexer = lex::Lexer::new();
-    lexer.lex(Box::new(std::string::String::from("{main}")));
+    lexer.lex(Box::new(std::string::String::from("{{134 + 4 -    4}}")));
 
     let mut parser = parse::Parser::new(&mut lexer.tokens);
-    parser.parse();
+    let ast = parser.parse();
 
 
-    // let generator = generator::CGenerator::new(&mut parser.ast);
-    // generator.generate()
+    let generator = generator::CGenerator::new(ast);
+    generator.generate();
+    
     unsafe {
         println!("creating context.");
         let context = llvm_sys::core::LLVMContextCreate();

@@ -2,30 +2,37 @@ use crate::lex::Token;
 
 #[derive(Debug)]
 pub struct Program<'a>{
-    body: Vec<ParsedAST<'a>>
+    pub body: Vec<ParsedAST<'a>>
 }
 
 #[derive(Debug)]
 pub struct Block<'a>{
-    body: Vec<ParsedAST<'a>>
+    pub body: Vec<ParsedAST<'a>>
 }
 
 #[derive(Debug)]
 pub struct Identifier<'a> {
-    token: &'a Token
+    pub token: &'a Token
+}
+
+#[derive(Debug)]
+pub struct Binary<'a>{
+    pub left: Box<ParsedAST<'a>>,
+    pub op: &'a Token, // todo this should probably be a ref
+    pub right: Box<ParsedAST<'a>>
 }
 
 #[derive(Debug)]
 pub enum ParsedAST<'a> {
     PROGRAM(Program<'a>),
     BLOCK(Block<'a>),
-    IDENTIFIER(Identifier<'a>)
-
+    IDENTIFIER(Identifier<'a>),
+    NUMBER(f32),
+    BINARY(Binary<'a>),
 }
 
 pub struct Parser<'a>{
-    pub tokens: &'a Box<Vec<Token>>,
-    pub ast: ParsedAST<'a>
+    pub tokens: &'a Box<Vec<Token>>
 }
 // todo should the ast be an enum?
 
@@ -33,13 +40,12 @@ pub struct Parser<'a>{
 impl Parser<'_> {
 
     pub fn new(tokens: &mut Box<Vec<Token>>) -> Parser {
-        Parser { tokens: tokens, ast: ParsedAST::PROGRAM(Program{ body: vec!() })}
+        Parser { tokens: tokens}
     }
 
-    pub fn parse(&mut self){
+    pub fn parse(&mut self) -> ParsedAST{
         println!("parse!");
-        let res = self.parse_program();
-        println!("parse result {:?}.", res);
+        self.parse_program()
     }
 
     fn parse_program(&mut self) -> ParsedAST{
@@ -58,15 +64,77 @@ impl Parser<'_> {
     fn statement(&self, current: &mut usize) -> ParsedAST {
         println!("statement! {:?}", self.peek(&current));
         match self.peek(&current) {
-            Token::IDENTIFIER(_) => {
-                return self.decl(current);
-            },
-            Token::LCURLY => {
-                return self.block(current);
-            },
-            _ => {
-                panic!("unknown token!");
+            Token::IDENTIFIER(_) => self.decl(current),
+            Token::LCURLY => self.block(current),
+            _ => self.expression(current)
+        }
+    }
+
+    fn expression(&self, current: &mut usize) -> ParsedAST {
+        match self.peek(&current) {
+            _ => self.comparison(current)
+        }
+    }
+
+    fn comparison(&self, current: &mut usize) -> ParsedAST {
+        self.decl_or_assign(current)
+    }
+
+    fn decl_or_assign(&self, current: &mut usize) -> ParsedAST {
+        self.assign(current)
+    }
+
+    fn assign(&self, current: &mut usize) -> ParsedAST {
+        self.plus_or_minus(current)
+    }
+
+    fn plus_or_minus(&self, current: &mut usize) -> ParsedAST {
+        let higher_precedence = self.mul_or_div(current);
+
+        if(!self.end(current)){
+            match self.peek(current) {
+                Token::PLUS | Token::MINUS => {
+                    let token = self.consume(current);
+                    let right = self.expression(current);
+                    return ParsedAST::BINARY(Binary{
+                        left: Box::new(higher_precedence),
+                        op: token,
+                        right: Box::new(right)
+                    })
+                },
+                _ => return higher_precedence
             }
+        }
+        higher_precedence
+    }
+
+    fn mul_or_div(&self, current: &mut usize) -> ParsedAST {
+        self.unary(current)
+    }
+
+    fn unary(&self, current: &mut usize) -> ParsedAST {
+        self.call(current)
+    }
+
+    fn call(&self, current: &mut usize) -> ParsedAST {
+        self.struct_access(current)
+    }
+
+    fn struct_access(&self, current: &mut usize) -> ParsedAST {
+        self.single(current)
+    }
+
+    fn single(&self, current: &mut usize) -> ParsedAST {
+        match self.peek(current) {
+            Token::NUMBER(number) => {
+                self.consume(current);
+                println!("got number {}", number);
+                match number.parse::<f32>(){
+                    Ok(num) => ParsedAST::NUMBER(num),
+                    _ => panic!()
+                }
+            }
+            _ => panic!()
         }
     }
 

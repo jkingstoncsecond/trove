@@ -72,6 +72,7 @@ impl Lexer {
                 ',' => self.tokens.push(Token::COMMA),
                 ':' => self.tokens.push(Token::COLON),
                 ';' => self.tokens.push(Token::SEMICOLON),
+                ' ' => {},
                 _ => {
                     // todo do identifier
                     self.other();
