@@ -2,6 +2,7 @@ use core::panic;
 
 use crate::lex::Token;
 use crate::parse::Block;
+use crate::parse::Group;
 use crate::parse::Identifier;
 use crate::parse::ParsedAST;
 use crate::parse::Program;
@@ -60,6 +61,9 @@ impl CGenerator<'_>{
              ParsedAST::IDENTIFIER(identifier) => {
                  self.generate_identifier(code, &identifier);
              },
+             ParsedAST::GROUP(group) => {
+                self.generate_group(code, &group);
+             },
              ParsedAST::NUMBER(number) => {
                 self.generate_number(code, &number);
             },
@@ -105,5 +109,11 @@ impl CGenerator<'_>{
 
     fn generate_number<'a>(&self, code: &mut std::string::String, number: &f32){
         self.emit(code, number.to_string())
+    }
+
+    fn generate_group<'a>(&self, code: &mut std::string::String, group: &Group){
+        self.emit(code, "(".to_string());
+        self.generate_ast(code, &group.expression);
+        self.emit(code, ")".to_string());
     }
 }

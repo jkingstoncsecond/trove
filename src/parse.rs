@@ -23,12 +23,18 @@ pub struct Binary<'a>{
 }
 
 #[derive(Debug)]
+pub struct Group<'a>{
+    pub expression: Box<ParsedAST<'a>>
+}
+
+#[derive(Debug)]
 pub enum ParsedAST<'a> {
     PROGRAM(Program<'a>),
     BLOCK(Block<'a>),
     IDENTIFIER(Identifier<'a>),
     NUMBER(f32),
     BINARY(Binary<'a>),
+    GROUP(Group<'a>),
 }
 
 pub struct Parser<'a>{
@@ -133,7 +139,20 @@ impl Parser<'_> {
     }
 
     fn call(&self, current: &mut usize) -> ParsedAST {
-        self.struct_access(current)
+        let higher_presedence = self.struct_access(current);
+
+        if !self.end(current) {
+            match self.peek(current) {
+                Token::IDENTIFIER(_) => {
+                    
+                    // todo
+                    
+                }
+                _ => return higher_presedence
+            }
+        }
+
+        higher_presedence
     }
 
     fn struct_access(&self, current: &mut usize) -> ParsedAST {
@@ -144,11 +163,16 @@ impl Parser<'_> {
         match self.peek(current) {
             Token::NUMBER(number) => {
                 self.consume(current);
-                println!("got number {}", number);
                 match number.parse::<f32>(){
                     Ok(num) => ParsedAST::NUMBER(num),
                     _ => panic!()
                 }
+            },
+            Token::LPAREN => {
+                self.consume(current);
+                let expression = self.expression(current);
+                self.consume(current);
+                ParsedAST::GROUP(Group { expression: Box::new(expression) })
             }
             _ => panic!()
         }
