@@ -1,9 +1,5 @@
 use crate::lex::Token;
 
-pub struct Parser<'a>{
-    pub tokens: &'a Box<Vec<Token>>
-}
-
 #[derive(Debug)]
 pub struct Program<'a>{
     body: Vec<ParsedAST<'a>>
@@ -27,13 +23,17 @@ pub enum ParsedAST<'a> {
 
 }
 
+pub struct Parser<'a>{
+    pub tokens: &'a Box<Vec<Token>>,
+    pub ast: ParsedAST<'a>
+}
 // todo should the ast be an enum?
 
 
 impl Parser<'_> {
 
     pub fn new(tokens: &mut Box<Vec<Token>>) -> Parser {
-        Parser { tokens: tokens}
+        Parser { tokens: tokens, ast: ParsedAST::PROGRAM(Program{ body: vec!() })}
     }
 
     pub fn parse(&mut self){

@@ -1,0 +1,12 @@
+
+
+
+// todo enums are basically unions so I want away with them
+pub struct Target {
+    C,
+    CXX
+}
+
+pub struct Generator {
+
+}

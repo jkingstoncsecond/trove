@@ -1,0 +1,16 @@
+pub struct IR{
+
+    type enum {
+        NOP,
+        MOV
+        }
+
+}
+
+impl IR {
+
+    fmt (this) {
+        
+    }
+
+}

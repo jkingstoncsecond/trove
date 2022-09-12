@@ -1,0 +1,24 @@
+
+
+
+main pub fn (args anon [String]) {
+
+    // todo parse args and ensure we don't go out of bounds
+    source = {
+        file = @(BoundsCheck) args[1]
+        source try load(file) 
+        @(Scope(Fn)) defer close()
+        source
+    }
+
+    @(Unused) 
+    lexer = Lexer(source)
+    tokens = lexer.lex()
+
+    @(Unused) 
+    parser = Parser(tokens)
+    tokens = parser.parse()
+
+    generator = Generator(tokens, target: Target.CXX)
+    ir = generator.generate()
+}
