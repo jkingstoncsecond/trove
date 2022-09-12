@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use generator::Generator;
 
 mod lex;
@@ -9,15 +11,25 @@ fn main() {
     std::env::set_var("RUST_BACKTRACE", "1");
 
     let mut lexer = lex::Lexer::new();
-    lexer.lex(Box::new(std::string::String::from("{{134 + 4 -    4}}")));
+    lexer.lex(Box::new(std::string::String::from("23456")));
 
     let mut parser = parse::Parser::new(&mut lexer.tokens);
     let ast = parser.parse();
 
 
     let generator = generator::CGenerator::new(ast);
-    generator.generate();
+    let code = generator.generate();
+
+    let mut f = std::fs::File::create("/Users/james/dev/trove/build/build.c").expect("Unable to create file");
+    f.write_all(code.as_bytes()).expect("Unable to write code out as bytes");
     
+    std::process::Command::new("clang")
+        .arg("/Users/james/dev/trove/build/build.c")
+        .arg("-o")
+        .arg("/Users/james/dev/trove/build/build")
+        .output()
+        .expect("Unable to compile code");
+
     unsafe {
         println!("creating context.");
         let context = llvm_sys::core::LLVMContextCreate();

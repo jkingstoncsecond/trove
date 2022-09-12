@@ -109,7 +109,23 @@ impl Parser<'_> {
     }
 
     fn mul_or_div(&self, current: &mut usize) -> ParsedAST {
-        self.unary(current)
+        let higher_precedence = self.unary(current);
+
+        if(!self.end(current)){
+            match self.peek(current) {
+                Token::STAR | Token::DIV => {
+                    let token = self.consume(current);
+                    let right = self.expression(current);
+                    return ParsedAST::BINARY(Binary{
+                        left: Box::new(higher_precedence),
+                        op: token,
+                        right: Box::new(right)
+                    })
+                },
+                _ => return higher_precedence
+            }
+        }
+        higher_precedence
     }
 
     fn unary(&self, current: &mut usize) -> ParsedAST {
