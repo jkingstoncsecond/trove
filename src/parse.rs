@@ -28,6 +28,11 @@ pub struct Group<'a>{
 }
 
 #[derive(Debug)]
+pub struct Call<'a>{
+    pub callee: &'a Token
+}
+
+#[derive(Debug)]
 pub enum ParsedAST<'a> {
     PROGRAM(Program<'a>),
     BLOCK(Block<'a>),
@@ -35,6 +40,7 @@ pub enum ParsedAST<'a> {
     NUMBER(f32),
     BINARY(Binary<'a>),
     GROUP(Group<'a>),
+    CALL(Call<'a>),
 }
 
 pub struct Parser<'a>{
@@ -146,6 +152,18 @@ impl Parser<'_> {
                 Token::IDENTIFIER(_) => {
                     
                     // todo
+                    // todo peak_ahead could fail :(
+                    match self.peek_ahead(current, 1) {
+                        Token::LPAREN => {
+                            let identifier = self.consume(current);
+                            self.consume(current);
+                            // todo get args
+                            let expr = self.expression(current);
+                            self.consume(current);
+                            return ParsedAST::CALL(Call{callee: identifier})
+                        }
+                        _ => panic!()
+                    }
                     
                 }
                 _ => return higher_presedence
@@ -180,6 +198,13 @@ impl Parser<'_> {
 
     fn peek(&self, current: &usize) -> &Token {
         match self.tokens.get(*current) {
+            std::option::Option::Some(t) => return t,
+            _ => panic!("umm")
+        }
+    }
+
+    fn peek_ahead(&self, current: &usize, amount: usize) -> &Token {
+        match self.tokens.get(*current + amount) {
             std::option::Option::Some(t) => return t,
             _ => panic!("umm")
         }

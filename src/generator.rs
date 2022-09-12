@@ -2,6 +2,7 @@ use core::panic;
 
 use crate::lex::Token;
 use crate::parse::Block;
+use crate::parse::Call;
 use crate::parse::Group;
 use crate::parse::Identifier;
 use crate::parse::ParsedAST;
@@ -102,7 +103,7 @@ impl CGenerator<'_>{
 
     fn generate_identifier<'a>(&self, code: &mut std::string::String, identifier: &Identifier){
         match identifier.token {
-            Token::IDENTIFIER(value) => println!("{}", value),
+            Token::IDENTIFIER(value) => self.emit(code, value.to_string()),
             _ => panic!()
         }
     }
@@ -114,6 +115,16 @@ impl CGenerator<'_>{
     fn generate_group<'a>(&self, code: &mut std::string::String, group: &Group){
         self.emit(code, "(".to_string());
         self.generate_ast(code, &group.expression);
+        self.emit(code, ")".to_string());
+    }
+
+    fn generate_call<'a>(&self, code: &mut std::string::String, call: &Call){
+        match call.callee {
+            Token::IDENTIFIER(value) => self.emit(code, value.to_string()),
+            _ => panic!()
+        }
+        self.emit(code, "(".to_string());
+        //self.generate_ast(code, &group.expression);
         self.emit(code, ")".to_string());
     }
 }
