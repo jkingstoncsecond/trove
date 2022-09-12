@@ -29,14 +29,15 @@ pub struct Group<'a>{
 
 #[derive(Debug)]
 pub struct Call<'a>{
-    pub callee: &'a Token
+    pub callee: Box<ParsedAST<'a>>,
+    pub args: Box<ParsedAST<'a>>
 }
 
 #[derive(Debug)]
 pub enum ParsedAST<'a> {
     PROGRAM(Program<'a>),
     BLOCK(Block<'a>),
-    IDENTIFIER(Identifier<'a>),
+    IDENTIFIER(std::string::String),
     NUMBER(f32),
     BINARY(Binary<'a>),
     GROUP(Group<'a>),
@@ -76,7 +77,6 @@ impl Parser<'_> {
     fn statement(&self, current: &mut usize) -> ParsedAST {
         println!("statement! {:?}", self.peek(&current));
         match self.peek(&current) {
-            Token::IDENTIFIER(_) => self.decl(current),
             Token::LCURLY => self.block(current),
             _ => self.expression(current)
         }
@@ -146,21 +146,21 @@ impl Parser<'_> {
 
     fn call(&self, current: &mut usize) -> ParsedAST {
         let higher_presedence = self.struct_access(current);
-
+        println!("in call just done {:?}.", higher_presedence);
         if !self.end(current) {
-            match self.peek(current) {
+            match self.peek_ahead(current, -1) {
                 Token::IDENTIFIER(_) => {
                     
+                    println!("potential call! {:?}", self.peek_ahead(current, 1));
                     // todo
                     // todo peak_ahead could fail :(
-                    match self.peek_ahead(current, 1) {
+                    match self.peek(current) {
                         Token::LPAREN => {
-                            let identifier = self.consume(current);
                             self.consume(current);
                             // todo get args
                             let expr = self.expression(current);
                             self.consume(current);
-                            return ParsedAST::CALL(Call{callee: identifier})
+                            return ParsedAST::CALL(Call{callee: Box::new(higher_presedence), args: Box::new(expr)})
                         }
                         _ => panic!()
                     }
@@ -179,6 +179,10 @@ impl Parser<'_> {
 
     fn single(&self, current: &mut usize) -> ParsedAST {
         match self.peek(current) {
+            Token::IDENTIFIER(identifier) => {
+                self.consume(current);
+                ParsedAST::IDENTIFIER(identifier.to_string())
+            },
             Token::NUMBER(number) => {
                 self.consume(current);
                 match number.parse::<f32>(){
@@ -203,8 +207,8 @@ impl Parser<'_> {
         }
     }
 
-    fn peek_ahead(&self, current: &usize, amount: usize) -> &Token {
-        match self.tokens.get(*current + amount) {
+    fn peek_ahead(&self, current: &usize, amount: i32) -> &Token {
+        match self.tokens.get((*current as i32 + amount) as usize) {
             std::option::Option::Some(t) => return t,
             _ => panic!("umm")
         }
@@ -233,9 +237,9 @@ impl Parser<'_> {
         println!("doing decl:)");
         let next = self.consume(counter);
         match next {
-            Token::IDENTIFIER(_) => {
+            Token::IDENTIFIER(identifier) => {
                 // todo this is bad :(, we want a reference to the token
-                return ParsedAST::IDENTIFIER(Identifier{token: next});
+                return ParsedAST::IDENTIFIER(identifier.to_string());
             },
             _ => {
                 panic!()

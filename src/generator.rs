@@ -25,11 +25,11 @@ impl Generator for CGenerator<'_> {
 
         println!("===== generating =====");
 
-        self.emit(&mut code, "void main(){printf(\"%d\\n\", ".to_string());
+        self.emit(&mut code, "void test(int arg){printf(\"%d\\n\", arg);} void main(){".to_string());
 
         self.generate_ast(&mut code, &self.ast);
 
-        self.emit(&mut code, ");}".to_string());
+        self.emit(&mut code, ";}".to_string());
 
         println!("\n======================");
 
@@ -60,14 +60,17 @@ impl CGenerator<'_>{
                  self.generate_binary(code, &binary);
              },
              ParsedAST::IDENTIFIER(identifier) => {
-                 self.generate_identifier(code, &identifier);
+                 self.generate_identifier(code, identifier);
              },
              ParsedAST::GROUP(group) => {
                 self.generate_group(code, &group);
              },
+             ParsedAST::CALL(call) => {
+                self.generate_call(code, &call);
+             },
              ParsedAST::NUMBER(number) => {
                 self.generate_number(code, &number);
-            },
+             },
              _ => panic!()
          }
     }
@@ -101,11 +104,8 @@ impl CGenerator<'_>{
 
     }
 
-    fn generate_identifier<'a>(&self, code: &mut std::string::String, identifier: &Identifier){
-        match identifier.token {
-            Token::IDENTIFIER(value) => self.emit(code, value.to_string()),
-            _ => panic!()
-        }
+    fn generate_identifier<'a>(&self, code: &mut std::string::String, identifier: &std::string::String){
+        self.emit(code, identifier.to_string())
     }
 
     fn generate_number<'a>(&self, code: &mut std::string::String, number: &f32){
@@ -119,12 +119,9 @@ impl CGenerator<'_>{
     }
 
     fn generate_call<'a>(&self, code: &mut std::string::String, call: &Call){
-        match call.callee {
-            Token::IDENTIFIER(value) => self.emit(code, value.to_string()),
-            _ => panic!()
-        }
+        self.generate_ast(code, &call.callee);
         self.emit(code, "(".to_string());
-        //self.generate_ast(code, &group.expression);
+        self.generate_ast(code, &call.args);
         self.emit(code, ")".to_string());
     }
 }
