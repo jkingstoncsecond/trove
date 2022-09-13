@@ -10,8 +10,10 @@ fn main() {
 
     std::env::set_var("RUST_BACKTRACE", "1");
 
+    let source = std::fs::read_to_string("/Users/james/dev/trove/test/test.trove").expect("unable to read source file test.trove");
+
     let mut lexer = lex::Lexer::new();
-    lexer.lex(Box::new(std::string::String::from("test(1+44)")));
+    lexer.lex(Box::new(source));
 
     let mut parser = parse::Parser::new(&mut lexer.tokens);
     let ast = parser.parse();

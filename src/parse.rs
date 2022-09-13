@@ -11,6 +11,12 @@ pub struct Block<'a>{
 }
 
 #[derive(Debug)]
+pub struct Decl<'a>{
+    pub identifier: &'a Token,
+    pub value: Box<ParsedAST<'a>>
+}
+
+#[derive(Debug)]
 pub struct Identifier<'a> {
     pub token: &'a Token
 }
@@ -37,6 +43,7 @@ pub struct Call<'a>{
 pub enum ParsedAST<'a> {
     PROGRAM(Program<'a>),
     BLOCK(Block<'a>),
+    DECL(Decl<'a>),
     IDENTIFIER(std::string::String),
     NUMBER(f32),
     BINARY(Binary<'a>),
@@ -93,7 +100,30 @@ impl Parser<'_> {
     }
 
     fn decl_or_assign(&self, current: &mut usize) -> ParsedAST {
-        self.assign(current)
+
+        let first = self.peek(current);
+
+        if self.end_ahead(current, 1) {
+            return self.assign(current);
+        }
+
+        let second = self.peek_ahead(current, 1);
+
+        match first {
+            Token::IDENTIFIER(_) => {
+                match second {
+                    Token::EQUAL => {
+                        let identifier = self.consume(current);
+                        self.consume(current); // consume the =
+                        let value = self.expression(current);
+                        return ParsedAST::DECL(Decl{identifier, value: Box::new(value)})
+
+                    },
+                    _ => return self.assign(current)
+                }
+            },
+            _ => return self.assign(current)
+        }
     }
 
     fn assign(&self, current: &mut usize) -> ParsedAST {
@@ -150,21 +180,21 @@ impl Parser<'_> {
         if !self.end(current) {
             match self.peek_ahead(current, -1) {
                 Token::IDENTIFIER(_) => {
-                    
-                    println!("potential call! {:?}", self.peek_ahead(current, 1));
-                    // todo
-                    // todo peak_ahead could fail :(
-                    match self.peek(current) {
-                        Token::LPAREN => {
-                            self.consume(current);
-                            // todo get args
-                            let expr = self.expression(current);
-                            self.consume(current);
-                            return ParsedAST::CALL(Call{callee: Box::new(higher_presedence), args: Box::new(expr)})
+                    if !self.end_ahead(current, 1){
+                        println!("potential call! {:?}", self.peek_ahead(current, 1));
+                        // todo
+                        // todo peak_ahead could fail :(
+                        match self.peek(current) {
+                            Token::LPAREN => {
+                                self.consume(current);
+                                // todo get args
+                                let expr = self.expression(current);
+                                self.consume(current);
+                                return ParsedAST::CALL(Call{callee: Box::new(higher_presedence), args: Box::new(expr)})
+                            }
+                            _ => panic!()
                         }
-                        _ => panic!()
                     }
-                    
                 }
                 _ => return higher_presedence
             }
@@ -216,6 +246,10 @@ impl Parser<'_> {
 
     fn end(&self, current: &usize) -> bool {
         *current >= self.tokens.len()
+    }
+
+    fn end_ahead(&self, current: &usize, amount: i32) -> bool {
+        (*current as i32 + amount) as usize >= self.tokens.len()
     }
 
     fn expecting(&self, token: Token, current: &usize) -> bool {

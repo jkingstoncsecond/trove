@@ -3,6 +3,7 @@ use core::panic;
 use crate::lex::Token;
 use crate::parse::Block;
 use crate::parse::Call;
+use crate::parse::Decl;
 use crate::parse::Group;
 use crate::parse::Identifier;
 use crate::parse::ParsedAST;
@@ -56,6 +57,9 @@ impl CGenerator<'_>{
              ParsedAST::BLOCK(block) => {
                  self.generate_block(code, &block);
              },
+             ParsedAST::DECL(decl) => {
+                 self.generate_decl(code, &decl);
+             },
              ParsedAST::BINARY(binary) => {
                  self.generate_binary(code, &binary);
              },
@@ -87,6 +91,17 @@ impl CGenerator<'_>{
             self.generate_ast(code, item);
         }
         self.emit(code,"}".to_string());
+    }
+
+    fn generate_decl<'a>(&self, code: &mut std::string::String, decl: &Decl){
+        self.emit(code, "int ".to_string());
+        match decl.identifier {
+            Token::IDENTIFIER(value) => self.emit(code, value.to_string()),
+            _ => panic!()
+        }
+        self.emit(code, "=".to_string());
+        self.generate_ast(code, &decl.value);
+        self.emit(code, ";".to_string());
     }
 
     fn generate_binary<'a>(&self, code: &mut std::string::String, binary: &Binary){

@@ -20,6 +20,8 @@ pub enum Token {
     COLON,
     SEMICOLON,
 
+    EQUAL,
+
     NUMBER(std::string::String),
     STRING,
     IDENTIFIER(std::string::String)
@@ -59,6 +61,9 @@ impl Lexer {
  
 
             match self.program.chars().nth(self.current).unwrap() {
+                '\n' => {},
+                '\t' => {},
+                '\r' => {},
                 '+' => self.tokens.push(Token::PLUS),
                 '-' => self.tokens.push(Token::MINUS),
                 '*' => self.tokens.push(Token::STAR),
@@ -72,6 +77,7 @@ impl Lexer {
                 ',' => self.tokens.push(Token::COMMA),
                 ':' => self.tokens.push(Token::COLON),
                 ';' => self.tokens.push(Token::SEMICOLON),
+                '=' => self.tokens.push(Token::EQUAL),
                 ' ' => {},
                 _ => {
                     // todo do identifier
