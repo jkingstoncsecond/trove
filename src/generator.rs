@@ -54,6 +54,10 @@ impl CGenerator<'_>{
              ParsedAST::PROGRAM(program) => {
                  self.generate_program(code, &program);
              },
+             ParsedAST::STMT(stmt) => {
+                self.generate_ast(code, stmt);
+                self.emit(code, ";".to_string());
+             },
              ParsedAST::BLOCK(block) => {
                  self.generate_block(code, &block);
              },

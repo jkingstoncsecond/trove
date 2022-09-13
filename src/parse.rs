@@ -42,6 +42,7 @@ pub struct Call<'a>{
 #[derive(Debug)]
 pub enum ParsedAST<'a> {
     PROGRAM(Program<'a>),
+    STMT(Box<ParsedAST<'a>>),
     BLOCK(Block<'a>),
     DECL(Decl<'a>),
     IDENTIFIER(std::string::String),
@@ -82,10 +83,9 @@ impl Parser<'_> {
     }
 
     fn statement(&self, current: &mut usize) -> ParsedAST {
-        println!("statement! {:?}", self.peek(&current));
         match self.peek(&current) {
             Token::LCURLY => self.block(current),
-            _ => self.expression(current)
+            _ => ParsedAST::STMT(Box::new(self.expression(current)))
         }
     }
 
@@ -192,7 +192,7 @@ impl Parser<'_> {
                                 self.consume(current);
                                 return ParsedAST::CALL(Call{callee: Box::new(higher_presedence), args: Box::new(expr)})
                             }
-                            _ => panic!()
+                            _ => return higher_presedence
                         }
                     }
                 }
