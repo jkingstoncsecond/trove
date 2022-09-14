@@ -9,6 +9,7 @@ use crate::parse::Identifier;
 use crate::parse::ParsedAST;
 use crate::parse::Program;
 use crate::parse::Binary;
+use crate::typecheck::Type;
 
 pub trait Generator {
     fn generate(&self) -> std::string::String;
@@ -26,7 +27,7 @@ impl Generator for CGenerator<'_> {
 
         println!("===== generating =====");
 
-        self.emit(&mut code, "void test(int arg){printf(\"%d\\n\", arg);} void main(){".to_string());
+        self.emit(&mut code, "void test(const char* arg){printf(\"%s\\n\", arg);} void main(){".to_string());
 
         self.generate_ast(&mut code, &self.ast);
 
@@ -70,6 +71,9 @@ impl CGenerator<'_>{
              ParsedAST::IDENTIFIER(identifier) => {
                  self.generate_identifier(code, identifier);
              },
+             ParsedAST::STRING(string) => {
+                 self.generate_string(code, string);
+             },
              ParsedAST::GROUP(group) => {
                 self.generate_group(code, &group);
              },
@@ -81,6 +85,15 @@ impl CGenerator<'_>{
              },
              _ => panic!()
          }
+    }
+
+    fn generate_type(&self, code: &mut std::string::String, typ: &Type){
+        match typ {
+            Type::U32 => self.emit(code, "unsigned int".to_string()),
+            Type::I32 => self.emit(code, "int".to_string()),
+            Type::BOOL => self.emit(code, "unsigned int".to_string()),
+            _ => panic!()
+        }
     }
 
     fn generate_program<'a>(&self, code: &mut std::string::String, program: &Program){
@@ -98,7 +111,8 @@ impl CGenerator<'_>{
     }
 
     fn generate_decl<'a>(&self, code: &mut std::string::String, decl: &Decl){
-        self.emit(code, "int ".to_string());
+        self.generate_type(code, &decl.typ);
+        self.emit(code, " ".to_string());
         match decl.identifier {
             Token::IDENTIFIER(value) => self.emit(code, value.to_string()),
             _ => panic!()
@@ -125,6 +139,12 @@ impl CGenerator<'_>{
 
     fn generate_identifier<'a>(&self, code: &mut std::string::String, identifier: &std::string::String){
         self.emit(code, identifier.to_string())
+    }
+
+    fn generate_string<'a>(&self, code: &mut std::string::String, string: &std::string::String){
+        self.emit(code, "\"".to_string());
+        self.emit(code, string.to_string());
+        self.emit(code, "\"".to_string());
     }
 
     fn generate_number<'a>(&self, code: &mut std::string::String, number: &f32){

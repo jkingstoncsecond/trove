@@ -5,6 +5,7 @@ use generator::Generator;
 mod lex;
 mod parse;
 mod generator;
+mod typecheck;
 
 fn main() {
 

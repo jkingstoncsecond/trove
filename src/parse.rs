@@ -1,4 +1,5 @@
 use crate::lex::Token;
+use crate::typecheck::Type;
 
 #[derive(Debug)]
 pub struct Program<'a>{
@@ -13,6 +14,7 @@ pub struct Block<'a>{
 #[derive(Debug)]
 pub struct Decl<'a>{
     pub identifier: &'a Token,
+    pub typ: Type,
     pub value: Box<ParsedAST<'a>>
 }
 
@@ -46,6 +48,7 @@ pub enum ParsedAST<'a> {
     BLOCK(Block<'a>),
     DECL(Decl<'a>),
     IDENTIFIER(std::string::String),
+    STRING(std::string::String),
     NUMBER(f32),
     BINARY(Binary<'a>),
     GROUP(Group<'a>),
@@ -82,6 +85,15 @@ impl Parser<'_> {
         return ParsedAST::PROGRAM(Program{body: body});
     }
 
+    fn parse_type(&self, current: &mut usize) -> Type {
+        match self.consume(current) {
+            Token::U32 => Type::U32,
+            Token::I32 => Type::I32,
+            _ => panic!()
+        }
+
+    }
+
     fn statement(&self, current: &mut usize) -> ParsedAST {
         match self.peek(&current) {
             Token::LCURLY => self.block(current),
@@ -112,11 +124,13 @@ impl Parser<'_> {
         match first {
             Token::IDENTIFIER(_) => {
                 match second {
-                    Token::EQUAL => {
+                    // todo we need to match for a type here instead of identifier
+                    Token::U32 | Token::I32 => {
                         let identifier = self.consume(current);
+                        let typ = self.parse_type(current);
                         self.consume(current); // consume the =
                         let value = self.expression(current);
-                        return ParsedAST::DECL(Decl{identifier, value: Box::new(value)})
+                        return ParsedAST::DECL(Decl{identifier, typ, value: Box::new(value)})
 
                     },
                     _ => return self.assign(current)
@@ -133,7 +147,7 @@ impl Parser<'_> {
     fn plus_or_minus(&self, current: &mut usize) -> ParsedAST {
         let higher_precedence = self.mul_or_div(current);
 
-        if(!self.end(current)){
+        if !self.end(current){
             match self.peek(current) {
                 Token::PLUS | Token::MINUS => {
                     let token = self.consume(current);
@@ -153,7 +167,7 @@ impl Parser<'_> {
     fn mul_or_div(&self, current: &mut usize) -> ParsedAST {
         let higher_precedence = self.unary(current);
 
-        if(!self.end(current)){
+        if !self.end(current){
             match self.peek(current) {
                 Token::STAR | Token::DIV => {
                     let token = self.consume(current);
@@ -176,12 +190,10 @@ impl Parser<'_> {
 
     fn call(&self, current: &mut usize) -> ParsedAST {
         let higher_presedence = self.struct_access(current);
-        println!("in call just done {:?}.", higher_presedence);
         if !self.end(current) {
             match self.peek_ahead(current, -1) {
                 Token::IDENTIFIER(_) => {
                     if !self.end_ahead(current, 1){
-                        println!("potential call! {:?}", self.peek_ahead(current, 1));
                         // todo
                         // todo peak_ahead could fail :(
                         match self.peek(current) {
@@ -212,6 +224,10 @@ impl Parser<'_> {
             Token::IDENTIFIER(identifier) => {
                 self.consume(current);
                 ParsedAST::IDENTIFIER(identifier.to_string())
+            },
+            Token::STRING(string) => {
+                self.consume(current);
+                ParsedAST::STRING(string.to_string())
             },
             Token::NUMBER(number) => {
                 self.consume(current);

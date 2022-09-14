@@ -23,8 +23,14 @@ pub enum Token {
     EQUAL,
 
     NUMBER(std::string::String),
-    STRING,
-    IDENTIFIER(std::string::String)
+    STRING(std::string::String),
+    IDENTIFIER(std::string::String),
+
+    U32,
+    I32,
+    BOOL,
+    FN
+
 }
 
 // impl std::fmt::Display for Token {
@@ -56,10 +62,7 @@ impl Lexer {
 
         self.program = program;
 
-
         while !self.end() {
- 
-
             match self.program.chars().nth(self.current).unwrap() {
                 '\n' => {},
                 '\t' => {},
@@ -78,6 +81,18 @@ impl Lexer {
                 ':' => self.tokens.push(Token::COLON),
                 ';' => self.tokens.push(Token::SEMICOLON),
                 '=' => self.tokens.push(Token::EQUAL),
+                'i' => {
+                    if self.is_keyword("i32".to_string()) {
+                        self.tokens.push(Token::I32);
+                        self.current+=2; // its only 2 because we + 1 later
+                    }
+                },
+                'u' => {
+                    if self.is_keyword("u32".to_string()) {
+                        self.tokens.push(Token::U32);
+                        self.current+=2; // its only 2 because we + 1 later
+                    }
+                }
                 ' ' => {},
                 _ => {
                     // todo do identifier
@@ -97,6 +112,17 @@ impl Lexer {
 
     }
 
+    fn is_keyword(&self, keyword: std::string::String) -> bool {
+        let mut matched = true;
+        for i in 0..keyword.chars().count(){
+            if self.program.chars().nth(self.current+i).unwrap() != 
+                keyword.chars().nth(i).unwrap() {
+                    matched = false;
+                }
+        }
+        matched
+    }
+
     fn end(&self) -> bool {
         return self.current >= self.program.chars().count();
     }
@@ -107,6 +133,8 @@ impl Lexer {
             self.number();
         }else if c.is_alphabetic(){
             self.identifier();
+        }else if c.eq_ignore_ascii_case(&'"') || c.eq_ignore_ascii_case(&'\''){
+            self.string();
         }
     }
 
@@ -126,5 +154,18 @@ impl Lexer {
             self.current+=1;
         }
         self.tokens.push(Token::IDENTIFIER(s));
+    }
+
+    fn string(&mut self){
+        let first_char = self.program.chars().nth(self.current).unwrap();
+        self.current+=1;
+        let mut s = std::string::String::from("");
+        while !self.end() && 
+        !self.program.chars().nth(self.current).unwrap().eq_ignore_ascii_case(&first_char){
+            s.push(self.program.chars().nth(self.current).unwrap());
+            self.current+=1;
+        }
+        self.current+=1;
+        self.tokens.push(Token::STRING(s));
     }
 }
