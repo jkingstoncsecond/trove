@@ -1,5 +1,5 @@
 use crate::lex::Token;
-use crate::typecheck::Type;
+use crate::typecheck::{Type, Primative, Mutability};
 
 #[derive(Debug)]
 pub struct Program<'a>{
@@ -87,8 +87,8 @@ impl Parser<'_> {
 
     fn parse_type(&self, current: &mut usize) -> Type {
         match self.consume(current) {
-            Token::U32 => Type::U32,
-            Token::I32 => Type::I32,
+            Token::U32 => Type{mutability: Mutability::MUTABLE, primative: Primative::U32},
+            Token::I32 => Type{mutability: Mutability::MUTABLE, primative: Primative::I32},
             _ => panic!()
         }
 

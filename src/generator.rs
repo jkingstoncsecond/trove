@@ -9,6 +9,7 @@ use crate::parse::Identifier;
 use crate::parse::ParsedAST;
 use crate::parse::Program;
 use crate::parse::Binary;
+use crate::typecheck::Primative;
 use crate::typecheck::Type;
 
 pub trait Generator {
@@ -89,9 +90,9 @@ impl CGenerator<'_>{
 
     fn generate_type(&self, code: &mut std::string::String, typ: &Type){
         match typ {
-            Type::U32 => self.emit(code, "unsigned int".to_string()),
-            Type::I32 => self.emit(code, "int".to_string()),
-            Type::BOOL => self.emit(code, "unsigned int".to_string()),
+            Type{primative: Primative::U32, ..} => self.emit(code, "unsigned int".to_string()),
+            Type{primative: Primative::I32, ..} => self.emit(code, "int".to_string()),
+            Type{primative: Primative::BOOL, ..} => self.emit(code, "unsigned int".to_string()),
             _ => panic!()
         }
     }
