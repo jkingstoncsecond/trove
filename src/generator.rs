@@ -9,6 +9,7 @@ use crate::parse::Identifier;
 use crate::parse::ParsedAST;
 use crate::parse::Program;
 use crate::parse::Binary;
+use crate::typecheck::Mutability;
 use crate::typecheck::Primative;
 use crate::typecheck::Type;
 
@@ -89,6 +90,11 @@ impl CGenerator<'_>{
     }
 
     fn generate_type(&self, code: &mut std::string::String, typ: &Type){
+        match typ {
+            Type{mutability: Mutability::MUTABLE, ..} => {},
+            Type{mutability: Mutability::CONSTANT, ..} => self.emit(code, "const ".to_string()),
+            _ => panic!()
+        }
         match typ {
             Type{primative: Primative::U32, ..} => self.emit(code, "unsigned int".to_string()),
             Type{primative: Primative::I32, ..} => self.emit(code, "int".to_string()),
