@@ -1,5 +1,5 @@
 use crate::lex::Token;
-use crate::typecheck::{Type, Primative, Mutability};
+use crate::typecheck::{Type, Primative, Mutability, Fn as FnType};
 
 #[derive(Debug)]
 pub struct Program<'a>{
@@ -98,6 +98,7 @@ impl Parser<'_> {
             Token::U32 => Type{mutability: Mutability::CONSTANT, primative: Primative::U32},
             Token::I32 => Type{mutability: Mutability::CONSTANT, primative: Primative::I32},
             Token::BOOL => Type{mutability: Mutability::CONSTANT, primative: Primative::BOOL},
+            Token::FN => Type{mutability: Mutability::CONSTANT, primative: Primative::FN(FnType{args: vec![]})},
             Token::TYPE => Type{mutability: Mutability::CONSTANT, primative: Primative::TYPE},
             _ => panic!()
         }
@@ -135,13 +136,12 @@ impl Parser<'_> {
             Token::IDENTIFIER(_) => {
                 match second {
                     // todo we need to match for a type here instead of identifier
-                    Token::U32 | Token::I32 | Token::BOOL| Token::TYPE => {
+                    Token::U32 | Token::I32 | Token::BOOL | Token::TYPE | Token::FN => {
                         let identifier = self.consume(current);
                         let typ = self.parse_type(current);
                         self.consume(current); // consume the =
                         let value = self.expression(current);
                         return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value: Box::new(value)})
-
                     },
                     Token::EQUAL => {
                         let identifier = self.consume(current);
@@ -267,6 +267,9 @@ impl Parser<'_> {
                 let expression = self.expression(current);
                 self.consume(current);
                 ParsedAST::GROUP(Group { expression: Box::new(expression) })
+            },
+            Token::LCURLY => {
+                self.block(current)
             }
             _ => panic!()
         }
@@ -306,20 +309,6 @@ impl Parser<'_> {
                 return t;
             },
             _ => panic!("umm")
-        }
-    }
-
-    fn decl(&self, counter: &mut usize) -> ParsedAST {
-        println!("doing decl:)");
-        let next = self.consume(counter);
-        match next {
-            Token::IDENTIFIER(identifier) => {
-                // todo this is bad :(, we want a reference to the token
-                return ParsedAST::IDENTIFIER(identifier.to_string());
-            },
-            _ => {
-                panic!()
-            }
         }
     }
 

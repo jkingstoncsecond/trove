@@ -105,6 +105,13 @@ impl Lexer {
                     if self.is_keyword("false".to_string()) {
                         self.tokens.push(Token::FALSE);
                         self.current+=4; // its only 2 because we + 1 later
+                    }else if self.is_keyword("fn".to_string()) {
+                        self.tokens.push(Token::FALSE);
+                        self.current+=1; // its only 2 because we + 1 later
+                    }else{
+                        // todo do identifier
+                        self.other();
+                        continue;
                     }
                 }
                 'i' => {
@@ -152,7 +159,6 @@ impl Lexer {
 
         }
 
-
         for token in self.tokens.iter() {
             println!("token {:?}", token);
         }
@@ -165,7 +171,7 @@ impl Lexer {
         && self.program.chars().nth(self.current).unwrap() != '\r' {
             self.current += 1;
         }
-        self.current+=1;
+        //self.current+=1;
     }
 
     fn is_keyword(&self, keyword: std::string::String) -> bool {
@@ -174,7 +180,7 @@ impl Lexer {
             if self.program.chars().nth(self.current+i).unwrap() != 
                 keyword.chars().nth(i).unwrap() {
                     matched = false;
-                }
+            }
         }
         matched
     }
@@ -205,12 +211,14 @@ impl Lexer {
 
     fn identifier(&mut self){
         let mut s = std::string::String::from("");
+        //println!("doing identifier for char {}.", self.program.chars().nth(self.current).unwrap());
         while !self.end() && (
             self.program.chars().nth(self.current).unwrap().is_alphabetic()
         || self.program.chars().nth(self.current).unwrap()=='_') {
             s.push(self.program.chars().nth(self.current).unwrap());
             self.current+=1;
         }
+        //println!("s is {}.", s);
         self.tokens.push(Token::IDENTIFIER(s));
     }
 
