@@ -74,7 +74,13 @@ impl Lexer {
                 '+' => self.tokens.push(Token::PLUS),
                 '-' => self.tokens.push(Token::MINUS),
                 '*' => self.tokens.push(Token::STAR),
-                '/' => self.tokens.push(Token::DIV),
+                '/' => {
+                    if self.program.chars().nth(self.current+1).unwrap() == '/' {
+                        self.single_line_comment();
+                    }else{
+                        self.tokens.push(Token::DIV);
+                    }
+                },
                 '{' => self.tokens.push(Token::LCURLY),
                 '}' => self.tokens.push(Token::RCURLY),
                 '(' => self.tokens.push(Token::LPAREN),
@@ -151,6 +157,15 @@ impl Lexer {
             println!("token {:?}", token);
         }
 
+    }
+
+    fn single_line_comment(&mut self) {
+        self.current += 2;
+        while self.program.chars().nth(self.current).unwrap() != '\n'
+        && self.program.chars().nth(self.current).unwrap() != '\r' {
+            self.current += 1;
+        }
+        self.current+=1;
     }
 
     fn is_keyword(&self, keyword: std::string::String) -> bool {

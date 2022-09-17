@@ -44,6 +44,12 @@ pub struct Call<'a>{
 }
 
 #[derive(Debug)]
+pub struct Fn<'a>{
+    pub body: Box<ParsedAST<'a>>
+}
+
+
+#[derive(Debug)]
 pub enum ParsedAST<'a> {
     PROGRAM(Program<'a>),
     STMT(Box<ParsedAST<'a>>),
@@ -51,6 +57,7 @@ pub enum ParsedAST<'a> {
     DECL(Decl<'a>),
     IDENTIFIER(std::string::String),
     STRING(std::string::String),
+    FN(Fn<'a>),
     NUMBER(f32),
     BINARY(Binary<'a>),
     GROUP(Group<'a>),

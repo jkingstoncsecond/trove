@@ -1,5 +1,9 @@
-use crate::parse::{ParsedAST, Program, Decl, Binary};
+use crate::parse::{ParsedAST, Program, Decl, Binary, Block};
 
+#[derive(Debug)]
+pub struct SymTable{
+    
+}
 
 #[derive(Debug)]
 pub struct Fn{
@@ -53,6 +57,7 @@ impl TypeChecker {
         match ast {
             ParsedAST::STMT(stmt) => self.type_check_ast(stmt),
             ParsedAST::PROGRAM(program) => self.type_check_program(program),
+            ParsedAST::BLOCK(block) => self.type_check_block(block),
             ParsedAST::DECL(decl) => self.type_check_decl(decl),
             ParsedAST::NUMBER(num) => self.type_check_num(num),
             ParsedAST::STRING(s) => self.type_check_string(s),
@@ -65,6 +70,14 @@ impl TypeChecker {
     // todo should type be optional
     fn type_check_program(&mut self, program: &mut Program) -> Option<Type> {
         for item in program.body.iter_mut() {
+            self.type_check_ast(item);
+        }
+        // todo 
+        None
+    }
+
+    fn type_check_block(&mut self, block: &mut Block) -> Option<Type> {
+        for item in block.body.iter_mut() {
             self.type_check_ast(item);
         }
         // todo 
