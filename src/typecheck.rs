@@ -1,4 +1,4 @@
-use crate::{parse::{ParsedAST, Program, Decl, Binary, Block}, lex::Token};
+use crate::{parse::{ParsedAST, Program, Decl, Binary, Block, Fn as ParsedFn}, lex::Token};
 
 #[derive(Debug)]
 pub struct SymTable{
@@ -47,7 +47,8 @@ impl TypeChecker {
     }
 
     pub fn type_check<'a>(&mut self, mut tmp: Box<ParsedAST<'a>>) -> Box<ParsedAST<'a>> {
-        //println!("typechecking...");
+        println!("typechecking...");
+
         self.type_check_ast(tmp.as_mut()); // hmm can we do this without it being mutable? NO!
         //let x: ParsedAST<'a> = *tmp;
         //Box::new(x)
@@ -55,11 +56,13 @@ impl TypeChecker {
     }
 
     fn type_check_ast(&mut self, ast: &mut ParsedAST) -> Option<Type> {
+        //println!("... ast {:?}.", ast);
         match ast {
             ParsedAST::STMT(stmt) => self.type_check_ast(stmt),
             ParsedAST::PROGRAM(program) => self.type_check_program(program),
             ParsedAST::BLOCK(block) => self.type_check_block(block),
             ParsedAST::DECL(decl) => self.type_check_decl(decl),
+            ParsedAST::FN(func) => self.type_check_func(func),
             ParsedAST::NUMBER(num) => self.type_check_num(num),
             ParsedAST::STRING(s) => self.type_check_string(s),
             ParsedAST::BINARY(binary) => self.type_check_binary(binary),
@@ -78,6 +81,7 @@ impl TypeChecker {
     }
 
     fn type_check_block(&mut self, block: &mut Block) -> Option<Type> {
+        println!("... block {:?}.", block);
         for item in block.body.iter_mut() {
             self.type_check_ast(item);
         }
@@ -87,15 +91,25 @@ impl TypeChecker {
 
     fn type_check_decl(&mut self, decl: &mut Decl) -> Option<Type> {
 
-        // todo
-        if decl.requires_infering {
-            let value_type = self.type_check_ast(&mut decl.value);
-            println!("got value type as {:?}.", value_type);
-            match value_type {
-                Some(t) => decl.typ = t,
-                None => panic!()
-            }
+        println!("decl! {:?}", decl);
+
+        match &mut decl.value {
+            Some(val) => {
+                let value_type = self.type_check_ast(val);
+                if decl.requires_infering {
+                    println!("typechecking {:?}.", decl.identifier);
+                    //let value_type = self.type_check_ast(&mut decl.value);
+                    println!("... got {:?}.", value_type);
+                    println!("got value type as {:?}.", value_type);
+                    match value_type {
+                        Some(t) => decl.typ = t,
+                        None => panic!()
+                    };
+                }
+            },
+            None => {}
         }
+        
 
         match &mut decl.typ {
             Type{primative: Primative::FN(func), ..} => {
@@ -107,9 +121,14 @@ impl TypeChecker {
                 }
             }
             _ => {}
-        }
+        };
 
         None
+    }
+
+    fn type_check_func(&mut self, func: &mut ParsedFn) -> Option<Type> {
+        // todo
+        self.type_check_ast(&mut func.body)
     }
 
     fn type_check_num(&self, num: &f32) -> Option<Type> {

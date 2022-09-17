@@ -17,7 +17,7 @@ pub struct Decl<'a>{
     pub identifier: &'a Token,
     pub typ: Type,
     pub requires_infering: bool,
-    pub value: Box<ParsedAST<'a>>,
+    pub value: Option<Box<ParsedAST<'a>>>,
 }
 
 #[derive(Debug)]
@@ -40,7 +40,7 @@ pub struct Group<'a>{
 #[derive(Debug)]
 pub struct Call<'a>{
     pub callee: Box<ParsedAST<'a>>,
-    pub args: Box<ParsedAST<'a>>
+    pub args: Option<Box<ParsedAST<'a>>>
 }
 
 #[derive(Debug)]
@@ -151,14 +151,14 @@ impl Parser<'_> {
                         };
 
                         let value = self.expression(current);
-                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value: Box::new(value)})
+                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value: Some(Box::new(value))})
                     },
                     Token::EQUAL => {
                         let identifier = self.consume(current);
                         let typ = Type{mutability: Mutability::CONSTANT, primative: Primative::NONE};
                         self.consume(current); // consume the =
                         let value = self.expression(current);
-                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: true, value: Box::new(value)})
+                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: true, value: Some(Box::new(value))})
 
                     },
                     _ => return self.assign(current)
@@ -227,10 +227,17 @@ impl Parser<'_> {
                         match self.peek(current) {
                             Token::LPAREN => {
                                 self.consume(current);
-                                // todo get args
-                                let expr = self.expression(current);
-                                self.consume(current);
-                                return ParsedAST::CALL(Call{callee: Box::new(higher_presedence), args: Box::new(expr)})
+
+                                // todo SUPPORT NO ARGS
+                                if !self.expecting(Token::RPAREN, current){
+                                    let expr = self.expression(current);
+                                    self.consume(current);
+                                    return ParsedAST::CALL(Call{callee: Box::new(higher_presedence), args: Some(Box::new(expr))})
+                                }else{
+                                    self.consume(current);
+                                    return ParsedAST::CALL(Call{callee: Box::new(higher_presedence), args: None})
+                                }
+                                
                             }
                             _ => return higher_presedence
                         }

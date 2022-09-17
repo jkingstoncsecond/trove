@@ -22,7 +22,6 @@ pub struct CGenerator<'a> {
 
 impl Generator for CGenerator<'_> {
     fn generate(&self) -> std::string::String{
-        println!("{:?}", self.ast);
 
         let mut code = "".to_string();
 
@@ -144,12 +143,12 @@ impl CGenerator<'_> {
         match &decl.typ.primative {
             Primative::FN(func) => {
                 // todo
-                println!("doing func!");
-
-
                 // todo emit at global scope
                 self.generate_type(code, &decl.typ);
-                self.generate_ast(code, &decl.value);
+                match &decl.value {
+                    Some(value) => self.generate_ast(code, &value),
+                    None => {}
+                }
             },
             _ => {
                 self.generate_type(code, &decl.typ);
@@ -158,8 +157,13 @@ impl CGenerator<'_> {
                     Token::IDENTIFIER(value) => self.emit(code, value.to_string()),
                     _ => panic!()
                 }
-                self.emit(code, "=".to_string());
-                self.generate_ast(code, &decl.value);
+                match &decl.value {
+                    Some(value) => {
+                        self.emit(code, "=".to_string());
+                        self.generate_ast(code, &value);
+                    },
+                    None => {}
+                }
                 self.emit(code, ";".to_string());
             }
         }
@@ -203,7 +207,10 @@ impl CGenerator<'_> {
     fn generate_call<'a>(&self, code: &mut std::string::String, call: &Call){
         self.generate_ast(code, &call.callee);
         self.emit(code, "(".to_string());
-        self.generate_ast(code, &call.args);
+        match &call.args {
+            Some(args) => self.generate_ast(code, &args),
+            None => {}
+        }
         self.emit(code, ")".to_string());
     }
 }
