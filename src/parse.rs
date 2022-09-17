@@ -3,6 +3,7 @@ use crate::typecheck::{Type, Primative, Mutability};
 
 #[derive(Debug)]
 pub struct Program<'a>{
+    // todo this should probably be an array of Box<ParsedAST>
     pub body: Vec<ParsedAST<'a>>
 }
 
@@ -15,7 +16,8 @@ pub struct Block<'a>{
 pub struct Decl<'a>{
     pub identifier: &'a Token,
     pub typ: Type,
-    pub value: Box<ParsedAST<'a>>
+    pub requires_infering: bool,
+    pub value: Box<ParsedAST<'a>>,
 }
 
 #[derive(Debug)]
@@ -64,12 +66,11 @@ pub struct Parser<'a>{
 impl Parser<'_> {
 
     pub fn new(tokens: &mut Box<Vec<Token>>) -> Parser {
-        Parser { tokens: tokens}
+        Parser {tokens}
     }
 
-    pub fn parse(&mut self) -> ParsedAST{
-        println!("parse!");
-        self.parse_program()
+    pub fn parse(&mut self) -> Box<ParsedAST> {
+        Box::new(self.parse_program())
     }
 
     fn parse_program(&mut self) -> ParsedAST{
@@ -130,7 +131,15 @@ impl Parser<'_> {
                         let typ = self.parse_type(current);
                         self.consume(current); // consume the =
                         let value = self.expression(current);
-                        return ParsedAST::DECL(Decl{identifier, typ, value: Box::new(value)})
+                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value: Box::new(value)})
+
+                    },
+                    Token::EQUAL => {
+                        let identifier = self.consume(current);
+                        let typ = Type{mutability: Mutability::CONSTANT, primative: Primative::NONE};
+                        self.consume(current); // consume the =
+                        let value = self.expression(current);
+                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: true, value: Box::new(value)})
 
                     },
                     _ => return self.assign(current)

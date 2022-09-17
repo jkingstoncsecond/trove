@@ -5,7 +5,6 @@ use crate::parse::Block;
 use crate::parse::Call;
 use crate::parse::Decl;
 use crate::parse::Group;
-use crate::parse::Identifier;
 use crate::parse::ParsedAST;
 use crate::parse::Program;
 use crate::parse::Binary;
@@ -18,7 +17,7 @@ pub trait Generator {
 }
 
 pub struct CGenerator<'a> {
-    pub ast: ParsedAST<'a>
+    pub ast: &'a Box<ParsedAST<'a>>
 }
 
 impl Generator for CGenerator<'_> {
@@ -27,15 +26,11 @@ impl Generator for CGenerator<'_> {
 
         let mut code = "".to_string();
 
-        println!("===== generating =====");
-
         self.emit(&mut code, "void test(const char* arg){printf(\"%s\\n\", arg);} void main(){".to_string());
 
         self.generate_ast(&mut code, &self.ast);
 
         self.emit(&mut code, ";}".to_string());
-
-        println!("\n======================");
 
         println!("{}", code);
 
@@ -43,8 +38,8 @@ impl Generator for CGenerator<'_> {
     }
 }
 
-impl CGenerator<'_>{
-    pub fn new(ast: ParsedAST) -> CGenerator {
+impl CGenerator<'_> {
+    pub fn new<'a>(ast: &'a Box<ParsedAST>) -> CGenerator<'a> {
         CGenerator {ast}
     }
 

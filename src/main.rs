@@ -17,21 +17,25 @@ fn main() {
     lexer.lex(Box::new(source));
 
     let mut parser = parse::Parser::new(&mut lexer.tokens);
-    let ast = parser.parse();
+    let mut ast = parser.parse();
 
+    println!("ast {:?}.", ast);
 
-    let generator = generator::CGenerator::new(ast);
+    let mut type_checker = typecheck::TypeChecker::new();//typecheck::TypeChecker::new(ast);
+    let mut new_ast = type_checker.type_check(ast);
+
+    let generator = generator::CGenerator::new(&new_ast);
     let code = generator.generate();
 
     let mut f = std::fs::File::create("/Users/james/dev/trove/build/build.c").expect("Unable to create file");
     f.write_all(code.as_bytes()).expect("Unable to write code out as bytes");
     
-    std::process::Command::new("clang")
-        .arg("/Users/james/dev/trove/build/build.c")
-        .arg("-o")
-        .arg("/Users/james/dev/trove/build/build")
-        .output()
-        .expect("Unable to compile code");
+    // std::process::Command::new("clang")
+    //     .arg("/Users/james/dev/trove/build/build.c")
+    //     .arg("-o")
+    //     .arg("/Users/james/dev/trove/build/build")
+    //     .output()
+    //     .expect("Unable to compile code");
 
     unsafe {
         println!("creating context.");
