@@ -3,7 +3,8 @@ use crate::parse::{ParsedAST, Program, Decl, Binary};
 
 #[derive(Debug)]
 pub struct Fn{
-    
+    pub args: Vec<Type>,
+    // pub return_type: Type
 }
 
 #[derive(Debug)]
@@ -14,7 +15,8 @@ pub enum Primative{
     BOOL,
     STRING,
     FN(Fn),
-    BLOCK
+    BLOCK,
+    TYPE
 }
 
 #[derive(Debug)]

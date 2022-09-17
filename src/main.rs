@@ -27,11 +27,11 @@ fn main() {
     let generator = generator::CGenerator::new(&new_ast);
     let code = generator.generate();
 
-    let mut f = std::fs::File::create("/Users/james/dev/trove/build/build.c").expect("Unable to create file");
+    let mut f = std::fs::File::create("/Users/james/dev/trove/build/build.cpp").expect("Unable to create file");
     f.write_all(code.as_bytes()).expect("Unable to write code out as bytes");
     
-    std::process::Command::new("clang")
-        .arg("/Users/james/dev/trove/build/build.c")
+    std::process::Command::new("clang++")
+        .arg("/Users/james/dev/trove/build/build.cpp")
         .arg("-o")
         .arg("/Users/james/dev/trove/build/build")
         .output()

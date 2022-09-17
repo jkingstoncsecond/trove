@@ -30,6 +30,7 @@ pub enum Token {
     I32,
     BOOL,
     FN,
+    TYPE,
 
     TRUE,
     FALSE
@@ -88,6 +89,10 @@ impl Lexer {
                     if self.is_keyword("bool".to_string()) {
                         self.tokens.push(Token::BOOL);
                         self.current+=3; // its only 3 because we + 1 later
+                    }else{
+                        // todo do identifier
+                        self.other();
+                        continue;
                     }
                 },
                 'f' => {
@@ -100,11 +105,18 @@ impl Lexer {
                     if self.is_keyword("i32".to_string()) {
                         self.tokens.push(Token::I32);
                         self.current+=2; // its only 2 because we + 1 later
+                    }else{
+                        // todo do identifier
+                        self.other();
+                        continue;
                     }
                 },
                 't' => {
                     if self.is_keyword("true".to_string()) {
                         self.tokens.push(Token::TRUE);
+                        self.current+=3; // its only 2 because we + 1 later
+                    }else if self.is_keyword("type".to_string()) {
+                        self.tokens.push(Token::TYPE);
                         self.current+=3; // its only 2 because we + 1 later
                     }else{
                         // todo do identifier
@@ -116,6 +128,10 @@ impl Lexer {
                     if self.is_keyword("u32".to_string()) {
                         self.tokens.push(Token::U32);
                         self.current+=2; // its only 2 because we + 1 later
+                    }else{
+                        // todo do identifier
+                        self.other();
+                        continue;
                     }
                 }
                 ' ' => {},

@@ -26,7 +26,7 @@ impl Generator for CGenerator<'_> {
 
         let mut code = "".to_string();
 
-        self.emit(&mut code, "void print_bool(int x){printf(\"%d\", x);} void print_string(const char* arg){printf(\"%s\\n\", arg);} void main(){".to_string());
+        self.emit(&mut code, "#include <cstdio>\nvoid println(int x){printf(\"%d\\n\", x);} void println(const char* arg){printf(\"%s\\n\", arg);} int main(){".to_string());
 
         self.generate_ast(&mut code, &self.ast);
 
@@ -95,6 +95,11 @@ impl CGenerator<'_> {
             Type{primative: Primative::I32, ..} => self.emit(code, "int".to_string()),
             Type{primative: Primative::BOOL, ..} => self.emit(code, "unsigned int".to_string()),
             Type{primative: Primative::STRING, ..} => self.emit(code, "char*".to_string()),
+            Type{primative: Primative::TYPE, ..} => {
+                self.emit(code, "typedef struct".to_string());
+                // todo get the struct anonymouse name
+                self.emit(code, " __anon_struct_name".to_string());
+            }, 
             _ => panic!()
         }
     }

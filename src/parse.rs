@@ -91,6 +91,7 @@ impl Parser<'_> {
             Token::U32 => Type{mutability: Mutability::CONSTANT, primative: Primative::U32},
             Token::I32 => Type{mutability: Mutability::CONSTANT, primative: Primative::I32},
             Token::BOOL => Type{mutability: Mutability::CONSTANT, primative: Primative::BOOL},
+            Token::TYPE => Type{mutability: Mutability::CONSTANT, primative: Primative::TYPE},
             _ => panic!()
         }
 
@@ -127,7 +128,7 @@ impl Parser<'_> {
             Token::IDENTIFIER(_) => {
                 match second {
                     // todo we need to match for a type here instead of identifier
-                    Token::U32 | Token::I32 | Token::BOOL => {
+                    Token::U32 | Token::I32 | Token::BOOL| Token::TYPE => {
                         let identifier = self.consume(current);
                         let typ = self.parse_type(current);
                         self.consume(current); // consume the =
