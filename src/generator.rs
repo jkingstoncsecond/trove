@@ -26,7 +26,7 @@ impl Generator for CGenerator<'_> {
 
         let mut code = "".to_string();
 
-        self.emit(&mut code, "void test(const char* arg){printf(\"%s\\n\", arg);} void main(){".to_string());
+        self.emit(&mut code, "void print_bool(int x){printf(\"%d\", x);} void print_string(const char* arg){printf(\"%s\\n\", arg);} void main(){".to_string());
 
         self.generate_ast(&mut code, &self.ast);
 

@@ -106,6 +106,10 @@ impl Lexer {
                     if self.is_keyword("true".to_string()) {
                         self.tokens.push(Token::TRUE);
                         self.current+=3; // its only 2 because we + 1 later
+                    }else{
+                        // todo do identifier
+                        self.other();
+                        continue;
                     }
                 },
                 'u' => {
@@ -170,7 +174,9 @@ impl Lexer {
 
     fn identifier(&mut self){
         let mut s = std::string::String::from("");
-        while !self.end() && self.program.chars().nth(self.current).unwrap().is_alphabetic(){
+        while !self.end() && (
+            self.program.chars().nth(self.current).unwrap().is_alphabetic()
+        || self.program.chars().nth(self.current).unwrap()=='_') {
             s.push(self.program.chars().nth(self.current).unwrap());
             self.current+=1;
         }
