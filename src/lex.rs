@@ -106,7 +106,7 @@ impl Lexer {
                         self.tokens.push(Token::FALSE);
                         self.current+=4; // its only 2 because we + 1 later
                     }else if self.is_keyword("fn".to_string()) {
-                        self.tokens.push(Token::FALSE);
+                        self.tokens.push(Token::FN);
                         self.current+=1; // its only 2 because we + 1 later
                     }else{
                         // todo do identifier

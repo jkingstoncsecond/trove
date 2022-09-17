@@ -26,11 +26,11 @@ impl Generator for CGenerator<'_> {
 
         let mut code = "".to_string();
 
-        self.emit(&mut code, "#include <cstdio>\nvoid println(int x){printf(\"%d\\n\", x);} void println(const char* arg){printf(\"%s\\n\", arg);} int main(){".to_string());
+        self.emit(&mut code, "#include <cstdio>\nvoid println(int x){printf(\"%d\\n\", x);} void println(const char* arg){printf(\"%s\\n\", arg);}".to_string());// int main(){".to_string());
 
         self.generate_ast(&mut code, &self.ast);
 
-        self.emit(&mut code, ";}".to_string());
+        //self.emit(&mut code, ";}".to_string());
 
         println!("{}", code);
 
@@ -41,6 +41,13 @@ impl Generator for CGenerator<'_> {
 impl CGenerator<'_> {
     pub fn new<'a>(ast: &'a Box<ParsedAST>) -> CGenerator<'a> {
         CGenerator {ast}
+    }
+
+    fn emit_global(&self, code: &mut std::string::String, new_code: std::string::String) {
+        
+        // todo
+        
+        //code.push_str(new_code.as_str())   
     }
 
     fn emit(&self, code: &mut std::string::String, new_code: std::string::String) {
@@ -86,21 +93,36 @@ impl CGenerator<'_> {
 
     fn generate_type(&self, code: &mut std::string::String, typ: &Type){
         match typ {
-            Type{mutability: Mutability::MUTABLE, ..} => {},
-            Type{mutability: Mutability::CONSTANT, ..} => self.emit(code, "const ".to_string()),
-            _ => panic!()
-        }
-        match typ {
-            Type{primative: Primative::U32, ..} => self.emit(code, "unsigned int".to_string()),
-            Type{primative: Primative::I32, ..} => self.emit(code, "int".to_string()),
-            Type{primative: Primative::BOOL, ..} => self.emit(code, "unsigned int".to_string()),
-            Type{primative: Primative::STRING, ..} => self.emit(code, "char*".to_string()),
-            Type{primative: Primative::TYPE, ..} => {
-                self.emit(code, "struct ".to_string());
-                // todo get the struct anonymouse name
-                self.emit(code, "__anon_struct_name".to_string());
-            }, 
-            _ => panic!()
+            Type{primative: Primative::FN(func), ..} => {
+                match typ.mutability {
+                    Mutability::CONSTANT => {
+                        // todo
+                        self.emit(code, "int main()".to_string())
+                    },
+                    Mutability::MUTABLE => {
+                        // todo
+                    }
+                }
+            },
+            _ => {
+                match typ {
+                    Type{mutability: Mutability::MUTABLE, ..} => {},
+                    Type{mutability: Mutability::CONSTANT, ..} => self.emit(code, "const ".to_string()),
+                    _ => panic!()
+                }
+                match typ {
+                    Type{primative: Primative::U32, ..} => self.emit(code, "unsigned int".to_string()),
+                    Type{primative: Primative::I32, ..} => self.emit(code, "int".to_string()),
+                    Type{primative: Primative::BOOL, ..} => self.emit(code, "unsigned int".to_string()),
+                    Type{primative: Primative::STRING, ..} => self.emit(code, "char*".to_string()),
+                    Type{primative: Primative::TYPE, ..} => {
+                        self.emit(code, "struct ".to_string());
+                        // todo get the struct anonymouse name
+                        self.emit(code, "__anon_struct_name".to_string());
+                    }, 
+                    _ => panic!()
+                }
+            }
         }
     }
 
@@ -119,15 +141,28 @@ impl CGenerator<'_> {
     }
 
     fn generate_decl<'a>(&self, code: &mut std::string::String, decl: &Decl){
-        self.generate_type(code, &decl.typ);
-        self.emit(code, " ".to_string());
-        match decl.identifier {
-            Token::IDENTIFIER(value) => self.emit(code, value.to_string()),
-            _ => panic!()
+        match &decl.typ.primative {
+            Primative::FN(func) => {
+                // todo
+                println!("doing func!");
+
+
+                // todo emit at global scope
+                self.generate_type(code, &decl.typ);
+                self.generate_ast(code, &decl.value);
+            },
+            _ => {
+                self.generate_type(code, &decl.typ);
+                self.emit(code, " ".to_string());
+                match decl.identifier {
+                    Token::IDENTIFIER(value) => self.emit(code, value.to_string()),
+                    _ => panic!()
+                }
+                self.emit(code, "=".to_string());
+                self.generate_ast(code, &decl.value);
+                self.emit(code, ";".to_string());
+            }
         }
-        self.emit(code, "=".to_string());
-        self.generate_ast(code, &decl.value);
-        self.emit(code, ";".to_string());
     }
 
     fn generate_binary<'a>(&self, code: &mut std::string::String, binary: &Binary){
