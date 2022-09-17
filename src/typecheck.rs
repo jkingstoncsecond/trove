@@ -1,4 +1,4 @@
-use crate::parse::{ParsedAST, Program, Decl};
+use crate::parse::{ParsedAST, Program, Decl, Binary};
 
 
 #[derive(Debug)]
@@ -54,6 +54,7 @@ impl TypeChecker {
             ParsedAST::DECL(decl) => self.type_check_decl(decl),
             ParsedAST::NUMBER(num) => self.type_check_num(num),
             ParsedAST::STRING(s) => self.type_check_string(s),
+            ParsedAST::BINARY(binary) => self.type_check_binary(binary),
             ParsedAST::CALL(s) => None, // todo
             _ => panic!()
         }
@@ -90,5 +91,18 @@ impl TypeChecker {
         // todo
         // todo primitive strings!
         Some(Type { mutability: Mutability::CONSTANT, primative: Primative::STRING })
+    }
+
+    fn type_check_binary(&mut self, binary: &mut Binary) -> Option<Type> {
+        // todo for now we just return the lhs
+        return match self.type_check_ast(&mut binary.left) {
+            Some(typ) => Some(typ),
+            None => panic!()
+        }
+        
+        // todo
+        // todo primitive strings!
+        //
+        //Some(Type { mutability: Mutability::CONSTANT, primative: Primative::STRING })
     }
 }
