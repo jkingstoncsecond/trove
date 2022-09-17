@@ -139,7 +139,17 @@ impl Parser<'_> {
                     Token::U32 | Token::I32 | Token::BOOL | Token::TYPE | Token::FN => {
                         let identifier = self.consume(current);
                         let typ = self.parse_type(current);
-                        self.consume(current); // consume the =
+
+                        let x = self.peek(current);
+
+                        // constant
+                        match self.peek(current) {
+                            Token::EQUAL => {
+                                self.consume(current); // consume the =
+                            },
+                            _ => {}
+                        };
+
                         let value = self.expression(current);
                         return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value: Box::new(value)})
                     },

@@ -30,8 +30,6 @@ impl Generator for CGenerator<'_> {
 
         self.generate_ast(&mut code, &self.ast);
 
-        //self.emit(&mut code, ";}".to_string());
-
         println!("{}", code);
 
         code
