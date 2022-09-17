@@ -98,7 +98,7 @@ impl Parser<'_> {
             Token::U32 => Type{mutability: Mutability::CONSTANT, primative: Primative::U32},
             Token::I32 => Type{mutability: Mutability::CONSTANT, primative: Primative::I32},
             Token::BOOL => Type{mutability: Mutability::CONSTANT, primative: Primative::BOOL},
-            Token::FN => Type{mutability: Mutability::CONSTANT, primative: Primative::FN(FnType{args: vec![]})},
+            Token::FN => Type{mutability: Mutability::CONSTANT, primative: Primative::FN(FnType{args: vec![], anonymous_name: "anon".to_string()})},
             Token::TYPE => Type{mutability: Mutability::CONSTANT, primative: Primative::TYPE},
             _ => panic!()
         }

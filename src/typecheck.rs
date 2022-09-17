@@ -1,4 +1,4 @@
-use crate::parse::{ParsedAST, Program, Decl, Binary, Block};
+use crate::{parse::{ParsedAST, Program, Decl, Binary, Block}, lex::Token};
 
 #[derive(Debug)]
 pub struct SymTable{
@@ -7,6 +7,7 @@ pub struct SymTable{
 
 #[derive(Debug)]
 pub struct Fn{
+    pub anonymous_name: std::string::String,
     pub args: Vec<Type>,
     // pub return_type: Type
 }
@@ -85,6 +86,7 @@ impl TypeChecker {
     }
 
     fn type_check_decl(&mut self, decl: &mut Decl) -> Option<Type> {
+
         // todo
         if decl.requires_infering {
             let value_type = self.type_check_ast(&mut decl.value);
@@ -94,6 +96,19 @@ impl TypeChecker {
                 None => panic!()
             }
         }
+
+        match &mut decl.typ {
+            Type{primative: Primative::FN(func), ..} => {
+                match decl.identifier {
+                    Token::IDENTIFIER(identifier) => {
+                        func.anonymous_name = identifier.to_string()
+                    },
+                    _ => panic!()
+                }
+            }
+            _ => {}
+        }
+
         None
     }
 
