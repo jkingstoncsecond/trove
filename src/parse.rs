@@ -90,6 +90,7 @@ impl Parser<'_> {
         match self.consume(current) {
             Token::U32 => Type{mutability: Mutability::CONSTANT, primative: Primative::U32},
             Token::I32 => Type{mutability: Mutability::CONSTANT, primative: Primative::I32},
+            Token::BOOL => Type{mutability: Mutability::CONSTANT, primative: Primative::BOOL},
             _ => panic!()
         }
 
@@ -126,7 +127,7 @@ impl Parser<'_> {
             Token::IDENTIFIER(_) => {
                 match second {
                     // todo we need to match for a type here instead of identifier
-                    Token::U32 | Token::I32 => {
+                    Token::U32 | Token::I32 | Token::BOOL => {
                         let identifier = self.consume(current);
                         let typ = self.parse_type(current);
                         self.consume(current); // consume the =
@@ -230,6 +231,14 @@ impl Parser<'_> {
 
     fn single(&self, current: &mut usize) -> ParsedAST {
         match self.peek(current) {
+            Token::TRUE => {
+                self.consume(current);
+                ParsedAST::NUMBER(1.0)
+            },
+            Token::FALSE => {
+                self.consume(current);
+                ParsedAST::NUMBER(0.0)
+            },
             Token::IDENTIFIER(identifier) => {
                 self.consume(current);
                 ParsedAST::IDENTIFIER(identifier.to_string())
