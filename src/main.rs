@@ -30,12 +30,12 @@ fn main() {
     let mut f = std::fs::File::create("/Users/james/dev/trove/build/build.c").expect("Unable to create file");
     f.write_all(code.as_bytes()).expect("Unable to write code out as bytes");
     
-    // std::process::Command::new("clang")
-    //     .arg("/Users/james/dev/trove/build/build.c")
-    //     .arg("-o")
-    //     .arg("/Users/james/dev/trove/build/build")
-    //     .output()
-    //     .expect("Unable to compile code");
+    std::process::Command::new("clang")
+        .arg("/Users/james/dev/trove/build/build.c")
+        .arg("-o")
+        .arg("/Users/james/dev/trove/build/build")
+        .output()
+        .expect("Unable to compile code");
 
     unsafe {
         println!("creating context.");

@@ -94,6 +94,7 @@ impl CGenerator<'_> {
             Type{primative: Primative::U32, ..} => self.emit(code, "unsigned int".to_string()),
             Type{primative: Primative::I32, ..} => self.emit(code, "int".to_string()),
             Type{primative: Primative::BOOL, ..} => self.emit(code, "unsigned int".to_string()),
+            Type{primative: Primative::STRING, ..} => self.emit(code, "char*".to_string()),
             _ => panic!()
         }
     }
