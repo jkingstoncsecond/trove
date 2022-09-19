@@ -1,5 +1,5 @@
 use crate::lex::Token;
-use crate::typecheck::{Type, Primative, Mutability, Fn as FnType};
+use crate::typecheck::{Type, Primative, Mutability, Fn as FnType, TypeType};
 
 #[derive(Debug)]
 pub struct Program<'a>{
@@ -108,7 +108,7 @@ impl Parser<'_> {
             Token::I32 => Type{mutability: Mutability::CONSTANT, primative: Primative::I32},
             Token::BOOL => Type{mutability: Mutability::CONSTANT, primative: Primative::BOOL},
             Token::FN => Type{mutability: Mutability::CONSTANT, primative: Primative::FN(FnType{args: vec![], anonymous_name: "anon".to_string()})},
-            Token::TYPE => Type{mutability: Mutability::CONSTANT, primative: Primative::TYPE},
+            Token::TYPE => Type{mutability: Mutability::CONSTANT, primative: Primative::TYPE(TypeType{anonymous_name: "anon".to_string()})},
             _ => panic!()
         }
 
@@ -146,7 +146,7 @@ impl Parser<'_> {
             Token::IDENTIFIER(_) => {
                 match second {
                     // todo we need to match for a type here instead of identifier
-                    Token::U32 | Token::I32 | Token::BOOL | Token::TYPE | Token::FN => {
+                    Token::U32 | Token::I32 | Token::BOOL | Token::TYPE | Token::FN | Token::TYPE => {
                         let identifier = self.consume(current);
                         let typ = self.parse_type(current);
 

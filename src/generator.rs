@@ -107,6 +107,18 @@ impl CGenerator<'_> {
                     }
                 }
             },
+            Type{primative: Primative::TYPE(typeType), ..} => {
+                match typ.mutability {
+                    Mutability::CONSTANT => {
+                        // todo
+                        self.emit(code, "struct ".to_string());
+                        self.emit(code, typeType.anonymous_name.to_string());
+                    },
+                    Mutability::MUTABLE => {
+                        // todo
+                    }
+                }
+            },
             _ => {
                 match typ {
                     Type{mutability: Mutability::MUTABLE, ..} => {},
@@ -118,11 +130,11 @@ impl CGenerator<'_> {
                     Type{primative: Primative::I32, ..} => self.emit(code, "int".to_string()),
                     Type{primative: Primative::BOOL, ..} => self.emit(code, "unsigned int".to_string()),
                     Type{primative: Primative::STRING, ..} => self.emit(code, "char*".to_string()),
-                    Type{primative: Primative::TYPE, ..} => {
-                        self.emit(code, "struct ".to_string());
-                        // todo get the struct anonymouse name
-                        self.emit(code, "__anon_struct_name".to_string());
-                    }, 
+                    // Type{primative: Primative::TYPE(typeType), ..} => {
+                    //     self.emit(code, "struct ".to_string());
+                    //     // todo get the struct anonymouse name
+                    //     self.emit(code, typeType.anonymous_name.to_string());
+                    // }, 
                     _ => panic!()
                 }
             }
@@ -160,6 +172,15 @@ impl CGenerator<'_> {
     fn generate_decl<'a>(&self, code: &mut std::string::String, decl: &Decl){
         match &decl.typ.primative {
             Primative::FN(func) => {
+                // todo
+                // todo emit at global scope
+                self.generate_type(code, &decl.typ);
+                match &decl.value {
+                    Some(value) => self.generate_ast(code, &value),
+                    None => {}
+                }
+            },
+            Primative::TYPE(func) => {
                 // todo
                 // todo emit at global scope
                 self.generate_type(code, &decl.typ);

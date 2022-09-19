@@ -44,6 +44,11 @@ pub struct Fn{
 }
 
 #[derive(Debug, Clone)]
+pub struct TypeType{
+    pub anonymous_name: std::string::String
+}
+
+#[derive(Debug, Clone)]
 pub enum Primative{
     NONE,
     U32,
@@ -52,7 +57,7 @@ pub enum Primative{
     STRING,
     FN(Fn),
     BLOCK,
-    TYPE
+    TYPE(TypeType)
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -173,6 +178,14 @@ impl TypeChecker {
                 match decl.identifier {
                     Token::IDENTIFIER(identifier) => {
                         func.anonymous_name = identifier.to_string()
+                    },
+                    _ => panic!()
+                }
+            },
+            Type{primative: Primative::TYPE(typeType), ..} => {
+                match decl.identifier {
+                    Token::IDENTIFIER(identifier) => {
+                        typeType.anonymous_name = identifier.to_string()
                     },
                     _ => panic!()
                 }
