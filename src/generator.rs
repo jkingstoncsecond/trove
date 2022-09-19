@@ -148,6 +148,13 @@ impl CGenerator<'_> {
         self.generate_ast(code, &iff.condition);
         self.emit(code, ")".to_string());
         self.generate_ast(code, &iff.body);
+        match &iff.else_body {
+            Some(else_body) => {
+                self.emit(code, " else ".to_string());
+                self.generate_ast(code, &else_body);
+            }
+            None => {}
+        }
     }
 
     fn generate_decl<'a>(&self, code: &mut std::string::String, decl: &Decl){
