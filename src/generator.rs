@@ -5,6 +5,7 @@ use crate::parse::Block;
 use crate::parse::Call;
 use crate::parse::Decl;
 use crate::parse::Group;
+use crate::parse::If;
 use crate::parse::ParsedAST;
 use crate::parse::Program;
 use crate::parse::Binary;
@@ -62,6 +63,9 @@ impl CGenerator<'_> {
              },
              ParsedAST::BLOCK(block) => {
                  self.generate_block(code, &block);
+             },
+             ParsedAST::IF(iff) => {
+                 self.generate_if(code, &iff);
              },
              ParsedAST::DECL(decl) => {
                  self.generate_decl(code, &decl);
@@ -137,6 +141,13 @@ impl CGenerator<'_> {
             self.generate_ast(code, item);
         }
         self.emit(code,"}".to_string());
+    }
+
+    fn generate_if<'a>(&self, code: &mut std::string::String, iff: &If){
+        self.emit(code, "if(".to_string());
+        self.generate_ast(code, &iff.condition);
+        self.emit(code, ")".to_string());
+        self.generate_ast(code, &iff.body);
     }
 
     fn generate_decl<'a>(&self, code: &mut std::string::String, decl: &Decl){

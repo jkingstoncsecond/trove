@@ -33,7 +33,10 @@ pub enum Token {
     TYPE,
 
     TRUE,
-    FALSE
+    FALSE,
+
+    IF,
+    ELSE
 
 }
 
@@ -101,6 +104,16 @@ impl Lexer {
                         continue;
                     }
                 },
+                'e' => {
+                    if self.is_keyword("else".to_string()) {
+                        self.tokens.push(Token::ELSE);
+                        self.current+=3; // its only 3 because we + 1 later
+                    }else{
+                        // todo do identifier
+                        self.other();
+                        continue;
+                    }
+                },
                 'f' => {
                     if self.is_keyword("false".to_string()) {
                         self.tokens.push(Token::FALSE);
@@ -118,6 +131,9 @@ impl Lexer {
                     if self.is_keyword("i32".to_string()) {
                         self.tokens.push(Token::I32);
                         self.current+=2; // its only 2 because we + 1 later
+                    }if self.is_keyword("if".to_string()) {
+                        self.tokens.push(Token::IF);
+                        self.current+=1; // its only 2 because we + 1 later
                     }else{
                         // todo do identifier
                         self.other();

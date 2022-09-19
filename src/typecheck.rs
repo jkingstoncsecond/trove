@@ -1,18 +1,49 @@
-use crate::{parse::{ParsedAST, Program, Decl, Binary, Block, Fn as ParsedFn}, lex::Token};
+use std::hash::Hash;
+
+use crate::{parse::{ParsedAST, Program, Decl, Binary, Block, Fn as ParsedFn, If}, lex::Token};
 
 #[derive(Debug)]
-pub struct SymTable{
-    
+pub struct SymTable<K,T>{
+    scope: usize,
+    symbols: Vec<std::collections::HashMap<K, T>>
 }
 
-#[derive(Debug)]
+impl<K,T> SymTable<K,T> where K: Eq + Hash {
+
+    pub fn add(&mut self, key: K, item: T){
+        match self.symbols.get_mut(self.scope) {
+            Some(map) => map.insert(key, item),
+            None => panic!()
+        };
+    }
+
+    pub fn get(&self, key: K) -> Option<&T> {
+        return match self.symbols.get(self.scope) {
+            Some(map) => map.get(&key),
+            None => panic!()
+        }
+    }
+
+    pub fn new_scope(&mut self){
+        self.scope+=1;
+        self.symbols.push(std::collections::HashMap::new());
+    }
+
+    pub fn leave_scope(&mut self){
+        self.scope-=1;
+        self.symbols.pop();
+    }
+
+}
+
+#[derive(Debug, Clone)]
 pub struct Fn{
     pub anonymous_name: std::string::String,
     pub args: Vec<Type>,
     // pub return_type: Type
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Primative{
     NONE,
     U32,
@@ -24,13 +55,13 @@ pub enum Primative{
     TYPE
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Mutability {
     MUTABLE,
     CONSTANT
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Type {
     pub mutability: Mutability,
     pub primative: Primative
@@ -38,12 +69,13 @@ pub struct Type {
 
 pub struct TypeChecker {
     // pub ast: Box<ParsedAST<'a>>
+    pub sym_table: SymTable<std::string::String, Type>
 }
 
 impl TypeChecker {
     pub fn new () -> TypeChecker {//(ast: Box<ParsedAST>) -> TypeChecker {
         // TypeChecker { ast }
-        TypeChecker { }
+        TypeChecker { sym_table: SymTable { scope: 0, symbols: vec!(std::collections::HashMap::new()) }}
     }
 
     pub fn type_check<'a>(&mut self, mut tmp: Box<ParsedAST<'a>>) -> Box<ParsedAST<'a>> {
@@ -61,6 +93,7 @@ impl TypeChecker {
             ParsedAST::STMT(stmt) => self.type_check_ast(stmt),
             ParsedAST::PROGRAM(program) => self.type_check_program(program),
             ParsedAST::BLOCK(block) => self.type_check_block(block),
+            ParsedAST::IF(iff) => self.type_check_if(iff),
             ParsedAST::DECL(decl) => self.type_check_decl(decl),
             ParsedAST::FN(func) => self.type_check_func(func),
             ParsedAST::NUMBER(num) => self.type_check_num(num),
@@ -89,9 +122,33 @@ impl TypeChecker {
         None
     }
 
+    fn type_check_if(&mut self, iff: &mut If) -> Option<Type> {
+        println!("... if {:?}.", iff);
+        self.type_check_ast(&mut iff.condition);
+        self.type_check_ast(&mut iff.body);
+        match &mut iff.else_body {
+            Some(body) => {self.type_check_ast(body);},
+            None => {}
+        };
+        // todo 
+        None
+    }
+
     fn type_check_decl(&mut self, decl: &mut Decl) -> Option<Type> {
 
         println!("decl! {:?}", decl);
+
+
+        // todo check if symtable contains key
+        // match decl.identifier {
+        //     Token::IDENTIFIER(identifier) => {
+        //         match self.sym_table.get(identifier.to_string()) {
+        //             Some(_) => panic!("symbol already declared!"),
+        //             None => self.sym_table.add(identifier.to_string(), decl.typ)// todo
+        //         }
+        //     },
+        //     _ => panic!()
+        // }
 
         match &mut decl.value {
             Some(val) => {
