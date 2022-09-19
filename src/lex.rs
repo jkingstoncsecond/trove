@@ -26,6 +26,9 @@ pub enum Token {
     STRING(std::string::String),
     IDENTIFIER(std::string::String),
 
+    MUT,
+    CONST,
+
     U32,
     I32,
     BOOL,
@@ -104,6 +107,16 @@ impl Lexer {
                         continue;
                     }
                 },
+                'c' => {
+                    if self.is_keyword("const".to_string()) {
+                        self.tokens.push(Token::CONST);
+                        self.current+=4; // its only 3 because we + 1 later
+                    }else{
+                        // todo do identifier
+                        self.other();
+                        continue;
+                    }
+                },
                 'e' => {
                     if self.is_keyword("else".to_string()) {
                         self.tokens.push(Token::ELSE);
@@ -134,6 +147,16 @@ impl Lexer {
                     }else if self.is_keyword("if".to_string()) {
                         self.tokens.push(Token::IF);
                         self.current+=1; // its only 2 because we + 1 later
+                    }else{
+                        // todo do identifier
+                        self.other();
+                        continue;
+                    }
+                },
+                'm' => {
+                    if self.is_keyword("mut".to_string()) {
+                        self.tokens.push(Token::MUT);
+                        self.current+=2; // its only 3 because we + 1 later
                     }else{
                         // todo do identifier
                         self.other();

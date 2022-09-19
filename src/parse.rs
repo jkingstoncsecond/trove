@@ -109,12 +109,31 @@ impl Parser<'_> {
     }
 
     fn parse_type(&self, current: &mut usize) -> Type {
-        match self.consume(current) {
-            Token::U32 => Type{mutability: Mutability::CONSTANT, primative: Primative::U32},
-            Token::I32 => Type{mutability: Mutability::CONSTANT, primative: Primative::I32},
-            Token::BOOL => Type{mutability: Mutability::CONSTANT, primative: Primative::BOOL},
-            Token::FN => Type{mutability: Mutability::CONSTANT, primative: Primative::FN(FnType{args: vec![], anonymous_name: "anon".to_string()})},
-            Token::TYPE => Type{mutability: Mutability::CONSTANT, primative: Primative::TYPE(TypeType{anonymous_name: "anon".to_string()})},
+        
+        let mut mutability = Mutability::CONSTANT;
+
+        // todo get this working in parse decl
+        match self.peek(current) {
+            Token::CONST => {
+                self.consume(current);
+                mutability = Mutability::CONSTANT;
+            },
+            Token::MUT => {
+                self.consume(current);
+                mutability = Mutability::MUTABLE;
+            },
+            _ => {}
+        }
+     
+
+        match self.consume(current) { 
+
+            // todo these are mut
+            Token::U32 => Type{mutability, primative: Primative::U32},
+            Token::I32 => Type{mutability, primative: Primative::I32},
+            Token::BOOL => Type{mutability, primative: Primative::BOOL},
+            Token::FN => Type{mutability, primative: Primative::FN(FnType{args: vec![], anonymous_name: "anon".to_string()})},
+            Token::TYPE => Type{mutability, primative: Primative::TYPE(TypeType{anonymous_name: "anon".to_string()})},
             _ => panic!()
         }
 
@@ -186,15 +205,10 @@ impl Parser<'_> {
                     // todo we need to match for a type here instead of identifier
                     Token::U32 | Token::I32 | Token::BOOL => {
 
-                        println!("parsing regular num!");
-
                         let identifier = self.consume(current);
-                        println!("identifier {:?}.", identifier);
                         let typ = self.parse_type(current);
-                        println!("typ {:?}.", typ);
 
                         let mut value: Option<Box<ParsedAST>> = None;
-                        println!("peek {:?}.", self.peek(current));
                         // constant
                         match self.peek(current) {
                             Token::EQUAL => {
