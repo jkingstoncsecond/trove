@@ -30,6 +30,9 @@ pub enum Token {
     MUT,
     CONST,
 
+    PUB,
+    PRIV,
+
     U32,
     I32,
     BOOL,
@@ -159,6 +162,19 @@ impl Lexer {
                     if self.is_keyword("mut".to_string()) {
                         self.tokens.push(Token::MUT);
                         self.current+=2; // its only 3 because we + 1 later
+                    }else{
+                        // todo do identifier
+                        self.other();
+                        continue;
+                    }
+                },
+                'p' => {
+                    if self.is_keyword("pub".to_string()) {
+                        self.tokens.push(Token::PUB);
+                        self.current+=2; // its only 3 because we + 1 later
+                    }else if self.is_keyword("priv".to_string()) {
+                        self.tokens.push(Token::PRIV);
+                        self.current+=3; // its only 3 because we + 1 later
                     }else{
                         // todo do identifier
                         self.other();

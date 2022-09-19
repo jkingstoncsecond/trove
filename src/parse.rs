@@ -26,6 +26,12 @@ pub struct Decl<'a>{
 }
 
 #[derive(Debug)]
+pub struct Assign<'a>{
+    pub lhs: Box<ParsedAST<'a>>,
+    pub rhs: Box<ParsedAST<'a>>
+}
+
+#[derive(Debug)]
 pub struct If<'a>{
     pub condition: Box<ParsedAST<'a>>,
     pub body: Box<ParsedAST<'a>>,
@@ -75,6 +81,7 @@ pub enum ParsedAST<'a> {
     BLOCK(Block<'a>),
     IF(If<'a>),
     DECL(Decl<'a>),
+    ASSIGN(Assign<'a>),
     IDENTIFIER(std::string::String),
     STRING(std::string::String),
     FN(Fn<'a>),
@@ -119,6 +126,7 @@ impl Parser<'_> {
     fn parse_type(&self, current: &mut usize) -> Type {
         
         let mut mutability = Mutability::CONSTANT;
+        let mut mutability = Mutability::CONSTANT;
         //let mut mutability = Mutability::MUTABLE;
 
         // todo get this working in parse decl
@@ -133,7 +141,17 @@ impl Parser<'_> {
             },
             _ => {}
         }
-     
+
+        // todo get this working in parse decl
+        match self.peek(current) {
+            Token::PUB => {
+                self.consume(current);
+            },
+            Token::PRIV => {
+                self.consume(current);
+            },
+            _ => {}
+        }
 
         match self.consume(current) { 
 
@@ -213,7 +231,7 @@ impl Parser<'_> {
                         return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
                     },
                     // todo we need to match for a type here instead of identifier
-                    Token::MUT | Token::CONST | Token::U32 | Token::I32 | Token::BOOL | Token::IDENTIFIER(_) => {
+                    Token::MUT | Token::CONST | Token::PUB | Token::PRIV | Token::U32 | Token::I32 | Token::BOOL | Token::IDENTIFIER(_) => {
 
                         let identifier = self.consume(current);
                         let typ = self.parse_type(current);
