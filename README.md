@@ -2,6 +2,7 @@
 trove programming language
 
 # todo
+- enforce default constructors for const struct members
 - type declerations
 - branching (if, while, for)
 - inline assembly

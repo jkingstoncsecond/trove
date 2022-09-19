@@ -57,7 +57,8 @@ pub enum Primative{
     STRING,
     FN(Fn),
     BLOCK,
-    TYPE(TypeType)
+    TYPE(TypeType),
+    STRUCT(std::string::String)
 }
 
 #[derive(Debug, Clone, Copy)]

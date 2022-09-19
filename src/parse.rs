@@ -111,6 +111,7 @@ impl Parser<'_> {
     fn parse_type(&self, current: &mut usize) -> Type {
         
         let mut mutability = Mutability::CONSTANT;
+        //let mut mutability = Mutability::MUTABLE;
 
         // todo get this working in parse decl
         match self.peek(current) {
@@ -134,6 +135,7 @@ impl Parser<'_> {
             Token::BOOL => Type{mutability, primative: Primative::BOOL},
             Token::FN => Type{mutability, primative: Primative::FN(FnType{args: vec![], anonymous_name: "anon".to_string()})},
             Token::TYPE => Type{mutability, primative: Primative::TYPE(TypeType{anonymous_name: "anon".to_string()})},
+            Token::IDENTIFIER(identifier) => Type{mutability, primative: Primative::STRUCT(identifier.to_string())},
             _ => panic!()
         }
 
@@ -203,7 +205,7 @@ impl Parser<'_> {
                         return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
                     },
                     // todo we need to match for a type here instead of identifier
-                    Token::U32 | Token::I32 | Token::BOOL => {
+                    Token::MUT | Token::CONST | Token::U32 | Token::I32 | Token::BOOL | Token::IDENTIFIER(_) => {
 
                         let identifier = self.consume(current);
                         let typ = self.parse_type(current);

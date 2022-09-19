@@ -134,6 +134,7 @@ impl CGenerator<'_> {
                     Type{primative: Primative::I32, ..} => self.emit(code, "int".to_string()),
                     Type{primative: Primative::BOOL, ..} => self.emit(code, "unsigned int".to_string()),
                     Type{primative: Primative::STRING, ..} => self.emit(code, "char*".to_string()),
+                    Type{primative: Primative::STRUCT(identifier), ..} => self.emit(code, identifier.to_string()),
                     // Type{primative: Primative::TYPE(typeType), ..} => {
                     //     self.emit(code, "struct ".to_string());
                     //     // todo get the struct anonymouse name
