@@ -9,6 +9,7 @@ use crate::parse::If;
 use crate::parse::ParsedAST;
 use crate::parse::Program;
 use crate::parse::Binary;
+use crate::parse::StructTypesList;
 use crate::typecheck::Mutability;
 use crate::typecheck::Primative;
 use crate::typecheck::Type;
@@ -87,6 +88,9 @@ impl CGenerator<'_> {
              },
              ParsedAST::NUMBER(number) => {
                 self.generate_number(code, &number);
+             },
+             ParsedAST::STRUCT_TYPES_LIST(struct_types_list) => {
+                self.generate_struct_types_list(code, &struct_types_list);
              },
              _ => panic!()
          }
@@ -251,5 +255,13 @@ impl CGenerator<'_> {
             None => {}
         }
         self.emit(code, ")".to_string());
+    }
+
+    fn generate_struct_types_list<'a>(&self, code: &mut std::string::String, struct_types_list: &StructTypesList){
+        self.emit(code, "{".to_string());
+        for decl in struct_types_list.types.iter() {
+            self.generate_decl(code, decl);
+        }
+        self.emit(code, "}".to_string());
     }
 }

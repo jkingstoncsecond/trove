@@ -13,6 +13,11 @@ pub struct Block<'a>{
 }
 
 #[derive(Debug)]
+pub struct StructTypesList<'a>{
+    pub types: Vec<Decl<'a>>
+}
+
+#[derive(Debug)]
 pub struct Decl<'a>{
     pub identifier: &'a Token,
     pub typ: Type,
@@ -70,6 +75,7 @@ pub enum ParsedAST<'a> {
     BINARY(Binary<'a>),
     GROUP(Group<'a>),
     CALL(Call<'a>),
+    STRUCT_TYPES_LIST(StructTypesList<'a>),
 }
 
 pub struct Parser<'a>{
@@ -145,23 +151,60 @@ impl Parser<'_> {
         match first {
             Token::IDENTIFIER(_) => {
                 match second {
-                    // todo we need to match for a type here instead of identifier
-                    Token::U32 | Token::I32 | Token::BOOL | Token::TYPE | Token::FN | Token::TYPE => {
+                    Token::TYPE => {
                         let identifier = self.consume(current);
                         let typ = self.parse_type(current);
 
-                        let x = self.peek(current);
+                        let mut value: Option<Box<ParsedAST>> = None;
 
                         // constant
                         match self.peek(current) {
-                            Token::EQUAL => {
-                                self.consume(current); // consume the =
+                            Token::LCURLY => {
+                                value = Some(Box::new(self.struct_types_list(current)));
                             },
                             _ => {}
                         };
 
-                        let value = self.expression(current);
-                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value: Some(Box::new(value))})
+                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
+                    },
+                    Token::FN => {
+                        let identifier = self.consume(current);
+                        let typ = self.parse_type(current);
+
+                        let mut value: Option<Box<ParsedAST>> = None;
+
+                        // constant
+                        match self.peek(current) {
+                            Token::LCURLY => {
+                                value = Some(Box::new(self.block(current)));
+                            },
+                            _ => {}
+                        };
+
+                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
+                    },
+                    // todo we need to match for a type here instead of identifier
+                    Token::U32 | Token::I32 | Token::BOOL => {
+
+                        println!("parsing regular num!");
+
+                        let identifier = self.consume(current);
+                        println!("identifier {:?}.", identifier);
+                        let typ = self.parse_type(current);
+                        println!("typ {:?}.", typ);
+
+                        let mut value: Option<Box<ParsedAST>> = None;
+                        println!("peek {:?}.", self.peek(current));
+                        // constant
+                        match self.peek(current) {
+                            Token::EQUAL => {
+                                self.consume(current); // consume the =
+                                value = Some(Box::new(self.expression(current)))
+                            },
+                            _ => {}
+                        };
+
+                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
                     },
                     Token::EQUAL => {
                         let identifier = self.consume(current);
@@ -363,5 +406,23 @@ impl Parser<'_> {
         }
 
         return ParsedAST::IF(If{condition, body, else_body });
+    }
+
+    fn struct_types_list(&self, current: &mut usize) -> ParsedAST {
+        
+        println!("doing struct types list!");
+        self.consume(current); // consume the {
+
+        let mut types: Vec<Decl> = vec!();
+        while !self.end(current) && !self.expecting(Token::RCURLY, current) {
+            match self.decl_or_assign(current) {
+                ParsedAST::DECL(decl) => types.push(decl),
+                _ => panic!("must be a decl in a struct type def!")
+            }
+        }
+
+        self.consume(current); // consume the }
+
+        return ParsedAST::STRUCT_TYPES_LIST(StructTypesList{types});
     }
 }

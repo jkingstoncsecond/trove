@@ -105,6 +105,7 @@ impl TypeChecker {
             ParsedAST::STRING(s) => self.type_check_string(s),
             ParsedAST::BINARY(binary) => self.type_check_binary(binary),
             ParsedAST::CALL(s) => None, // todo
+            ParsedAST::STRUCT_TYPES_LIST(s) => None, // todo
             _ => panic!()
         }
     }
@@ -119,7 +120,7 @@ impl TypeChecker {
     }
 
     fn type_check_block(&mut self, block: &mut Block) -> Option<Type> {
-        println!("... block {:?}.", block);
+        // println!("... block {:?}.", block);
         for item in block.body.iter_mut() {
             self.type_check_ast(item);
         }
@@ -128,7 +129,7 @@ impl TypeChecker {
     }
 
     fn type_check_if(&mut self, iff: &mut If) -> Option<Type> {
-        println!("... if {:?}.", iff);
+        // println!("... if {:?}.", iff);
         self.type_check_ast(&mut iff.condition);
         self.type_check_ast(&mut iff.body);
         match &mut iff.else_body {
@@ -141,11 +142,8 @@ impl TypeChecker {
 
     fn type_check_decl(&mut self, decl: &mut Decl) -> Option<Type> {
 
-        println!("decl! {:?}", decl);
-
-
         // todo check if symtable contains key
-        // match decl.identifier {
+        // match decl.identifi.er {
         //     Token::IDENTIFIER(identifier) => {
         //         match self.sym_table.get(identifier.to_string()) {
         //             Some(_) => panic!("symbol already declared!"),
@@ -159,10 +157,10 @@ impl TypeChecker {
             Some(val) => {
                 let value_type = self.type_check_ast(val);
                 if decl.requires_infering {
-                    println!("typechecking {:?}.", decl.identifier);
+                    // println!("typechecking {:?}.", decl.identifier);
                     //let value_type = self.type_check_ast(&mut decl.value);
-                    println!("... got {:?}.", value_type);
-                    println!("got value type as {:?}.", value_type);
+                    // println!("... got {:?}.", value_type);
+                    // println!("got value type as {:?}.", value_type);
                     match value_type {
                         Some(t) => decl.typ = t,
                         None => panic!()
