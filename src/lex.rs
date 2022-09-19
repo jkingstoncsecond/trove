@@ -16,6 +16,7 @@ pub enum Token {
     LBRACKET,
     RBRACKET,
 
+    DOT,
     COMMA,
     COLON,
     SEMICOLON,
@@ -93,6 +94,7 @@ impl Lexer {
                 ')' => self.tokens.push(Token::RPAREN),
                 '[' => self.tokens.push(Token::LBRACKET),
                 ']' => self.tokens.push(Token::RBRACKET),
+                '.' => self.tokens.push(Token::DOT),
                 ',' => self.tokens.push(Token::COMMA),
                 ':' => self.tokens.push(Token::COLON),
                 ';' => self.tokens.push(Token::SEMICOLON),

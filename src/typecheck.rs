@@ -107,6 +107,7 @@ impl TypeChecker {
             ParsedAST::BINARY(binary) => self.type_check_binary(binary),
             ParsedAST::CALL(s) => None, // todo
             ParsedAST::STRUCT_TYPES_LIST(s) => None, // todo
+            ParsedAST::LHS_ACCESS(lhs_access) => None, // todo
             _ => panic!()
         }
     }

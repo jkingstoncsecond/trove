@@ -45,6 +45,13 @@ pub struct Binary<'a>{
 }
 
 #[derive(Debug)]
+pub struct LhsAccess<'a>{
+    pub left: Box<ParsedAST<'a>>,
+    // todo this should probably be an identifier?
+    pub right: Box<ParsedAST<'a>>
+}
+
+#[derive(Debug)]
 pub struct Group<'a>{
     pub expression: Box<ParsedAST<'a>>
 }
@@ -76,6 +83,7 @@ pub enum ParsedAST<'a> {
     GROUP(Group<'a>),
     CALL(Call<'a>),
     STRUCT_TYPES_LIST(StructTypesList<'a>),
+    LHS_ACCESS(LhsAccess<'a>),
 }
 
 pub struct Parser<'a>{
@@ -320,7 +328,17 @@ impl Parser<'_> {
     }
 
     fn struct_access(&self, current: &mut usize) -> ParsedAST {
-        self.single(current)
+
+        let higher_precedence = self.single(current);
+
+        match self.peek(current) {
+            Token::DOT => {
+                self.consume(current); // consume the dot
+                let rhs = self.expression(current);
+                return ParsedAST::LHS_ACCESS(LhsAccess{ left: Box::new(higher_precedence), right: Box::new(rhs) })
+            },
+            _ => {return higher_precedence}
+        }
     }
 
     fn single(&self, current: &mut usize) -> ParsedAST {

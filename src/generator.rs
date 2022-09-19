@@ -6,6 +6,7 @@ use crate::parse::Call;
 use crate::parse::Decl;
 use crate::parse::Group;
 use crate::parse::If;
+use crate::parse::LhsAccess;
 use crate::parse::ParsedAST;
 use crate::parse::Program;
 use crate::parse::Binary;
@@ -91,6 +92,9 @@ impl CGenerator<'_> {
              },
              ParsedAST::STRUCT_TYPES_LIST(struct_types_list) => {
                 self.generate_struct_types_list(code, &struct_types_list);
+             },
+             ParsedAST::LHS_ACCESS(lhs_access) => {
+                self.generate_lhs_access(code, &lhs_access);
              },
              _ => panic!()
          }
@@ -264,5 +268,11 @@ impl CGenerator<'_> {
             self.generate_decl(code, decl);
         }
         self.emit(code, "}".to_string());
+    }
+
+    fn generate_lhs_access<'a>(&self, code: &mut std::string::String, lhs_access: &LhsAccess){
+        self.generate_ast(code, &lhs_access.left);
+        self.emit(code, ".".to_string());
+        self.generate_ast(code, &lhs_access.right);
     }
 }
