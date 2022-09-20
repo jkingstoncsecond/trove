@@ -19,8 +19,6 @@ fn main() {
     let mut parser = parse::Parser::new(&mut lexer.tokens);
     let mut ast = parser.parse();
 
-    println!("ast! {:?}", ast);
-    
     let mut type_checker = typecheck::TypeChecker::new();//typecheck::TypeChecker::new(ast);
     let mut new_ast = type_checker.type_check(ast);
 

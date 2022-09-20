@@ -50,7 +50,7 @@ pub struct TypeType{
 
 #[derive(Debug, Clone)]
 pub enum Primative{
-    NONE,
+    INCOMPLETE,
     U32,
     I32,
     BOOL,
@@ -153,6 +153,7 @@ impl TypeChecker {
 
     fn type_check_decl(&mut self, decl: &mut Decl) -> Option<Type> {
 
+        //println!("typecheck decl! {:?}", decl);
         // todo check if symtable contains key
         // match decl.identifi.er {
         //     Token::IDENTIFIER(identifier) => {
@@ -172,8 +173,9 @@ impl TypeChecker {
                     //let value_type = self.type_check_ast(&mut decl.value);
                     // println!("... got {:?}.", value_type);
                     // println!("got value type as {:?}.", value_type);
+
                     match value_type {
-                        Some(t) => decl.typ = t,
+                        Some(t) => decl.typ.primative = t.primative,
                         None => panic!()
                     };
                 }

@@ -153,18 +153,17 @@ impl Parser<'_> {
             _ => {}
         }
 
-        match self.consume(current) { 
-
+        match self.peek(current) { 
             // todo these are mut
             // todo fix this VAR
-            Token::VAR => Type{mutability, primative: Primative::U32},
-            Token::U32 => Type{mutability, primative: Primative::U32},
-            Token::I32 => Type{mutability, primative: Primative::I32},
-            Token::BOOL => Type{mutability, primative: Primative::BOOL},
-            Token::FN => Type{mutability, primative: Primative::FN(FnType{args: vec![], anonymous_name: "anon".to_string()})},
-            Token::TYPE => Type{mutability, primative: Primative::TYPE(TypeType{anonymous_name: "anon".to_string()})},
-            Token::IDENTIFIER(identifier) => Type{mutability, primative: Primative::STRUCT(identifier.to_string())},
-            _ => panic!()
+            Token::VAR => {self.consume(current);return Type{mutability, primative: Primative::INCOMPLETE}},
+            Token::U32 => {self.consume(current);return Type{mutability, primative: Primative::U32}},
+            Token::I32 => {self.consume(current);return Type{mutability, primative: Primative::I32}},
+            Token::BOOL => {self.consume(current);return Type{mutability, primative: Primative::BOOL}},
+            Token::FN => {self.consume(current);return Type{mutability, primative: Primative::FN(FnType{args: vec![], anonymous_name: "anon".to_string()})}},
+            Token::TYPE => {self.consume(current);return Type{mutability, primative: Primative::TYPE(TypeType{anonymous_name: "anon".to_string()})}},
+            Token::IDENTIFIER(identifier) => {self.consume(current);return Type{mutability, primative: Primative::STRUCT(identifier.to_string())}},
+            _ => Type{mutability, primative: Primative::INCOMPLETE}
         }
 
     }
@@ -239,6 +238,7 @@ impl Parser<'_> {
                         let typ = self.parse_type(current);
 
                         let mut value: Option<Box<ParsedAST>> = None;
+
                         // constant
                         match self.peek(current) {
                             Token::EQUAL => {
@@ -248,7 +248,10 @@ impl Parser<'_> {
                             _ => {}
                         };
 
-                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
+                        match typ.primative {
+                            Primative::INCOMPLETE => return ParsedAST::DECL(Decl{identifier, typ, requires_infering: true, value}),
+                            _ => return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
+                        }
                     },
                     Token::EQUAL => {
 
