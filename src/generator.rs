@@ -1,6 +1,7 @@
 use core::panic;
 
 use crate::lex::Token;
+use crate::parse::Assign;
 use crate::parse::Block;
 use crate::parse::Call;
 use crate::parse::Decl;
@@ -71,6 +72,9 @@ impl CGenerator<'_> {
              },
              ParsedAST::DECL(decl) => {
                  self.generate_decl(code, &decl);
+             },
+             ParsedAST::ASSIGN(assign) => {
+                 self.generate_assign(code, &assign);
              },
              ParsedAST::BINARY(binary) => {
                  self.generate_binary(code, &binary);
@@ -176,6 +180,12 @@ impl CGenerator<'_> {
             }
             None => {}
         }
+    }
+
+    fn generate_assign<'a>(&self, code: &mut std::string::String, assign: &Assign){
+        self.generate_ast(code, &assign.lhs);
+        self.emit(code, "=".to_string());
+        self.generate_ast(code, &assign.rhs);
     }
 
     fn generate_decl<'a>(&self, code: &mut std::string::String, decl: &Decl){

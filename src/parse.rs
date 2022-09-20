@@ -126,7 +126,7 @@ impl Parser<'_> {
     fn parse_type(&self, current: &mut usize) -> Type {
         
         let mut mutability = Mutability::CONSTANT;
-        let mut mutability = Mutability::CONSTANT;
+
         //let mut mutability = Mutability::MUTABLE;
 
         // todo get this working in parse decl
@@ -156,6 +156,8 @@ impl Parser<'_> {
         match self.consume(current) { 
 
             // todo these are mut
+            // todo fix this VAR
+            Token::VAR => Type{mutability, primative: Primative::U32},
             Token::U32 => Type{mutability, primative: Primative::U32},
             Token::I32 => Type{mutability, primative: Primative::I32},
             Token::BOOL => Type{mutability, primative: Primative::BOOL},
@@ -231,7 +233,7 @@ impl Parser<'_> {
                         return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
                     },
                     // todo we need to match for a type here instead of identifier
-                    Token::MUT | Token::CONST | Token::PUB | Token::PRIV | Token::U32 | Token::I32 | Token::BOOL | Token::IDENTIFIER(_) => {
+                    Token::VAR | Token::MUT | Token::CONST | Token::PUB | Token::PRIV | Token::U32 | Token::I32 | Token::BOOL | Token::IDENTIFIER(_) => {
 
                         let identifier = self.consume(current);
                         let typ = self.parse_type(current);
@@ -249,11 +251,15 @@ impl Parser<'_> {
                         return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
                     },
                     Token::EQUAL => {
-                        let identifier = self.consume(current);
-                        let typ = Type{mutability: Mutability::CONSTANT, primative: Primative::NONE};
-                        self.consume(current); // consume the =
-                        let value = self.expression(current);
-                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: true, value: Some(Box::new(value))})
+
+                        // todo assign!
+
+                        // let identifier = self.consume(current);
+                        // let typ = Type{mutability: Mutability::CONSTANT, primative: Primative::NONE};
+                        // self.consume(current); // consume the =
+                        // let value = self.expression(current);
+                        // return ParsedAST::DECL(Decl{identifier, typ, requires_infering: true, value: Some(Box::new(value))})
+                        return self.assign(current);
 
                     },
                     _ => return self.assign(current)
@@ -264,7 +270,13 @@ impl Parser<'_> {
     }
 
     fn assign(&self, current: &mut usize) -> ParsedAST {
-        self.plus_or_minus(current)
+        let higher_precedence = self.plus_or_minus(current);
+        if self.expecting(Token::EQUAL, current) {
+            self.consume(current);
+            let rhs = self.plus_or_minus(current);
+            return ParsedAST::ASSIGN(Assign{lhs: Box::new(higher_precedence), rhs: Box::new(rhs)})
+        }
+        higher_precedence
     }
 
     fn plus_or_minus(&self, current: &mut usize) -> ParsedAST {

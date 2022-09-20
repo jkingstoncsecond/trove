@@ -27,6 +27,8 @@ pub enum Token {
     STRING(std::string::String),
     IDENTIFIER(std::string::String),
 
+    VAR,
+
     MUT,
     CONST,
 
@@ -203,7 +205,17 @@ impl Lexer {
                         self.other();
                         continue;
                     }
-                }
+                },
+                'v' => {
+                    if self.is_keyword("var".to_string()) {
+                        self.tokens.push(Token::VAR);
+                        self.current+=2; // its only 2 because we + 1 later
+                    }else{
+                        // todo do identifier
+                        self.other();
+                        continue;
+                    }
+                },
                 ' ' => {},
                 _ => {
                     // todo do identifier

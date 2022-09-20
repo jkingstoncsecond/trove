@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-use crate::{parse::{ParsedAST, Program, Decl, Binary, Block, Fn as ParsedFn, If}, lex::Token};
+use crate::{parse::{ParsedAST, Program, Decl, Binary, Block, Fn as ParsedFn, If, Assign}, lex::Token};
 
 #[derive(Debug)]
 pub struct SymTable<K,T>{
@@ -101,13 +101,16 @@ impl TypeChecker {
             ParsedAST::BLOCK(block) => self.type_check_block(block),
             ParsedAST::IF(iff) => self.type_check_if(iff),
             ParsedAST::DECL(decl) => self.type_check_decl(decl),
+            ParsedAST::ASSIGN(assign) => self.type_check_assign(assign),
             ParsedAST::FN(func) => self.type_check_func(func),
             ParsedAST::NUMBER(num) => self.type_check_num(num),
+            ParsedAST::IDENTIFIER(identifier) => None,
             ParsedAST::STRING(s) => self.type_check_string(s),
-            ParsedAST::BINARY(binary) => self.type_check_binary(binary),
+            ParsedAST::BINARY(binary) => None,//self.type_check_binary(binary),
             ParsedAST::CALL(s) => None, // todo
             ParsedAST::STRUCT_TYPES_LIST(s) => None, // todo
             ParsedAST::LHS_ACCESS(lhs_access) => None, // todo
+            ParsedAST::GROUP(_) => None, // todo
             _ => panic!()
         }
     }
@@ -139,6 +142,12 @@ impl TypeChecker {
             None => {}
         };
         // todo 
+        None
+    }
+
+    fn type_check_assign(&mut self, assign: &mut Assign) -> Option<Type> {
+        self.type_check_ast(&mut assign.lhs);
+        self.type_check_ast(&mut assign.rhs);
         None
     }
 

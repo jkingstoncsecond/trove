@@ -2,7 +2,7 @@
 trove programming language
 
 # todo
-- parsing assigns
+- just have mut instead of mut var
 - enforce default constructors for const struct members
 - type declerations
 - branching (if, while, for)
