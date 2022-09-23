@@ -76,6 +76,7 @@ pub struct Call<'a>{
 
 #[derive(Debug)]
 pub struct Fn<'a>{
+    pub params: Vec<Decl<'a>>,
     pub body: Box<ParsedAST<'a>>
 }
 
@@ -242,6 +243,8 @@ impl Parser<'_> {
 
                         return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
                     },
+                    // todo
+                    //  instead of parsing the fn type, just call self.fn() ?
                     Token::FN => {
                         let identifier = self.consume(current);
                         let typ = self.parse_type(current);
@@ -525,5 +528,24 @@ impl Parser<'_> {
         self.consume(current); // consume the }
 
         return ParsedAST::STRUCT_TYPES_LIST(StructTypesList{types});
+    }
+
+    fn function(&self, current: &mut usize) -> ParsedAST {
+        self.consume(current); // consume the fn 
+        let mut params: Vec<Decl> = vec![];
+        if self.expecting(Token::LPAREN, current) {
+            self.consume(current);
+            while !self.expecting(Token::RPAREN, current) {
+                let decl = self.decl_or_assign(current);
+                match decl {
+                    ParsedAST::DECL(d) => params.push(d),
+                    _ => panic!("must be decl!")
+                }
+            }
+            self.consume(current);
+        }
+        // umm this should be expression but currently blocks are stmts :(
+        let body = self.statement(current);
+        ParsedAST::FN(Fn{params, body: Box::new(body)})
     }
 }
