@@ -70,7 +70,8 @@ pub enum Mutability {
 #[derive(Debug, Clone)]
 pub struct Type {
     pub mutability: Mutability,
-    pub primative: Primative
+    pub primative: Primative,
+    pub reference: bool
 }
 
 pub struct TypeChecker {
@@ -106,6 +107,7 @@ impl TypeChecker {
             ParsedAST::NUMBER(num) => self.type_check_num(num),
             ParsedAST::IDENTIFIER(identifier) => None,
             ParsedAST::STRING(s) => self.type_check_string(s),
+            ParsedAST::LEFT_UNARY(left_unary) => None,//self.type_check_binary(binary),
             ParsedAST::BINARY(binary) => None,//self.type_check_binary(binary),
             ParsedAST::CALL(s) => None, // todo
             ParsedAST::STRUCT_TYPES_LIST(s) => None, // todo
@@ -214,13 +216,13 @@ impl TypeChecker {
 
     fn type_check_num(&self, num: &f32) -> Option<Type> {
         // todo
-        Some(Type { mutability: Mutability::CONSTANT, primative: Primative::I32 })
+        Some(Type { mutability: Mutability::CONSTANT, primative: Primative::I32, reference: false })
     }
 
     fn type_check_string(&self, s: &std::string::String) -> Option<Type> {
         // todo
         // todo primitive strings!
-        Some(Type { mutability: Mutability::CONSTANT, primative: Primative::STRING })
+        Some(Type { mutability: Mutability::CONSTANT, primative: Primative::STRING, reference: false })
     }
 
     fn type_check_binary(&mut self, binary: &mut Binary) -> Option<Type> {

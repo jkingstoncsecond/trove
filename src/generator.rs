@@ -7,6 +7,7 @@ use crate::parse::Call;
 use crate::parse::Decl;
 use crate::parse::Group;
 use crate::parse::If;
+use crate::parse::LeftUnary;
 use crate::parse::LhsAccess;
 use crate::parse::ParsedAST;
 use crate::parse::Program;
@@ -29,7 +30,21 @@ impl Generator for CGenerator<'_> {
 
         let mut code = "".to_string();
 
-        self.emit(&mut code, "#include <cstdio>\nvoid println(int x){printf(\"%d\\n\", x);} void println(const char* arg){printf(\"%s\\n\", arg);}".to_string());// int main(){".to_string());
+        self.emit(&mut code, "
+        #include <cstdio>
+        
+        void println(int* x){
+            printf(\"ptr='%s'\\n\", (void*)x);
+        } 
+        
+        void println(int x){
+            printf(\"%d\\n\", x);
+        } 
+        
+        void println(const char* arg){
+            printf(\"%s\\n\", arg);
+        }
+        ".to_string());// int main(){".to_string());
 
         self.generate_ast(&mut code, &self.ast);
 
@@ -75,6 +90,9 @@ impl CGenerator<'_> {
              },
              ParsedAST::ASSIGN(assign) => {
                  self.generate_assign(code, &assign);
+             },
+             ParsedAST::LEFT_UNARY(left_unary) => {
+                 self.generate_left_unary(code, &left_unary);
              },
              ParsedAST::BINARY(binary) => {
                  self.generate_binary(code, &binary);
@@ -150,6 +168,10 @@ impl CGenerator<'_> {
                     // }, 
                     _ => panic!()
                 }
+                match typ.reference {
+                    true => self.emit(code, "*".to_string()),
+                    false => {}
+                }
             }
         }
     }
@@ -223,6 +245,16 @@ impl CGenerator<'_> {
                     None => {}
                 }
                 self.emit(code, ";".to_string());
+            }
+        }
+    }
+
+    fn generate_left_unary<'a>(&self, code: &mut std::string::String, left_unary: &LeftUnary){
+        // todo
+        match left_unary{
+            LeftUnary::TAKE_REFERENCE(value) => {
+                self.emit(code, "&".to_string());
+                self.generate_ast(code, &value);
             }
         }
     }

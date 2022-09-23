@@ -44,6 +44,12 @@ pub struct Identifier<'a> {
 }
 
 #[derive(Debug)]
+pub enum LeftUnary<'a>{
+    TAKE_REFERENCE(Box<ParsedAST<'a>>)
+}
+
+// todo turn this into an enum
+#[derive(Debug)]
 pub struct Binary<'a>{
     pub left: Box<ParsedAST<'a>>,
     pub op: &'a Token, // todo this should probably be a ref
@@ -86,6 +92,7 @@ pub enum ParsedAST<'a> {
     STRING(std::string::String),
     FN(Fn<'a>),
     NUMBER(f32),
+    LEFT_UNARY(LeftUnary<'a>),
     BINARY(Binary<'a>),
     GROUP(Group<'a>),
     CALL(Call<'a>),
@@ -153,17 +160,37 @@ impl Parser<'_> {
             _ => {}
         }
 
+        let mut reference = false;
+        // todo get this working in parse decl
+        match self.peek(current) {
+            Token::AT => {
+                self.consume(current);
+                reference = true;
+            },
+            _ => {}
+        }
+
         match self.peek(current) { 
             // todo these are mut
             // todo fix this VAR
-            Token::VAR => {self.consume(current);return Type{mutability, primative: Primative::INCOMPLETE}},
-            Token::U32 => {self.consume(current);return Type{mutability, primative: Primative::U32}},
-            Token::I32 => {self.consume(current);return Type{mutability, primative: Primative::I32}},
-            Token::BOOL => {self.consume(current);return Type{mutability, primative: Primative::BOOL}},
-            Token::FN => {self.consume(current);return Type{mutability, primative: Primative::FN(FnType{args: vec![], anonymous_name: "anon".to_string()})}},
-            Token::TYPE => {self.consume(current);return Type{mutability, primative: Primative::TYPE(TypeType{anonymous_name: "anon".to_string()})}},
-            Token::IDENTIFIER(identifier) => {self.consume(current);return Type{mutability, primative: Primative::STRUCT(identifier.to_string())}},
-            _ => Type{mutability, primative: Primative::INCOMPLETE}
+            Token::VAR => {self.consume(current);return Type{reference, mutability, primative: Primative::INCOMPLETE}},
+            Token::U32 => {self.consume(current);return Type{reference, mutability, primative: Primative::U32}},
+            Token::I32 => {self.consume(current);return Type{reference, mutability, primative: Primative::I32}},
+            Token::BOOL => {self.consume(current);return Type{reference, mutability, primative: Primative::BOOL}},
+            Token::FN => {
+                self.consume(current);
+                if self.expecting(Token::LPAREN, current) {
+                    self.consume(current);
+                    while !self.expecting(Token::RPAREN, current) {
+                        self.consume(current);
+                    }
+                    self.consume(current);
+                }
+                return Type{reference, mutability, primative: Primative::FN(FnType{args: vec![], anonymous_name: "anon".to_string()})}
+            },
+            Token::TYPE => {self.consume(current);return Type{reference, mutability, primative: Primative::TYPE(TypeType{anonymous_name: "anon".to_string()})}},
+            Token::IDENTIFIER(identifier) => {self.consume(current);return Type{reference, mutability, primative: Primative::STRUCT(identifier.to_string())}},
+            _ => Type{reference, mutability, primative: Primative::INCOMPLETE}
         }
 
     }
@@ -232,7 +259,7 @@ impl Parser<'_> {
                         return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
                     },
                     // todo we need to match for a type here instead of identifier
-                    Token::VAR | Token::MUT | Token::CONST | Token::PUB | Token::PRIV | Token::U32 | Token::I32 | Token::BOOL | Token::IDENTIFIER(_) => {
+                    Token::AT |Token::VAR | Token::MUT | Token::CONST | Token::PUB | Token::PRIV | Token::U32 | Token::I32 | Token::BOOL | Token::IDENTIFIER(_) => {
 
                         let identifier = self.consume(current);
                         let typ = self.parse_type(current);
@@ -323,6 +350,13 @@ impl Parser<'_> {
     }
 
     fn unary(&self, current: &mut usize) -> ParsedAST {
+        
+        if self.expecting(Token::AT, current) {
+            self.consume(current);
+            let rhs = self.call(current);
+            return ParsedAST::LEFT_UNARY(LeftUnary::TAKE_REFERENCE(Box::new(rhs)))
+        }
+
         self.call(current)
     }
 

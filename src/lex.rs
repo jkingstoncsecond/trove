@@ -4,6 +4,9 @@
 pub enum Token {
     END,
 
+    AT,
+    HASH,
+
     PLUS,
     MINUS,
     STAR,
@@ -83,6 +86,8 @@ impl Lexer {
                 '\n' => {},
                 '\t' => {},
                 '\r' => {},
+                '@' => self.tokens.push(Token::AT),
+                '#' => self.tokens.push(Token::HASH),
                 '+' => self.tokens.push(Token::PLUS),
                 '-' => self.tokens.push(Token::MINUS),
                 '*' => self.tokens.push(Token::STAR),
