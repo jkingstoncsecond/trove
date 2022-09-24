@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-use crate::{parse::{ParsedAST, Program, Decl, Binary, Block, Fn as ParsedFn, If, Assign}, lex::Token};
+use crate::{parse::{ParsedAST, Program, Decl, Binary, Block, Fn as ParsedFn, If, Assign, LeftUnary, Call}, lex::Token};
 
 #[derive(Debug)]
 pub struct SymTable<K,T>{
@@ -105,11 +105,11 @@ impl TypeChecker {
             ParsedAST::ASSIGN(assign) => self.type_check_assign(assign),
             ParsedAST::FN(func) => self.type_check_func(func),
             ParsedAST::NUMBER(num) => self.type_check_num(num),
-            ParsedAST::IDENTIFIER(identifier) => None,
+            ParsedAST::IDENTIFIER(identifier) => self.type_check_identifier(identifier),
             ParsedAST::STRING(s) => self.type_check_string(s),
-            ParsedAST::LEFT_UNARY(left_unary) => None,//self.type_check_binary(binary),
+            ParsedAST::LEFT_UNARY(left_unary) => self.type_check_left_unary(left_unary),//self.type_check_binary(binary),
             ParsedAST::BINARY(binary) => None,//self.type_check_binary(binary),
-            ParsedAST::CALL(s) => None, // todo
+            ParsedAST::CALL(call) => self.type_check_call(call), // todo
             ParsedAST::STRUCT_TYPES_LIST(s) => None, // todo
             ParsedAST::LHS_ACCESS(lhs_access) => None, // todo
             ParsedAST::GROUP(_) => None, // todo
@@ -206,6 +206,13 @@ impl TypeChecker {
             _ => {}
         };
 
+        println!("type check decl! {:?} {:?}.", decl.identifier.to_owned(), decl.typ);
+
+        match decl.identifier {
+            Token::IDENTIFIER(identifier) => self.sym_table.add(identifier.to_string(), decl.typ.to_owned()),
+            _ => panic!()
+        }
+
         None
     }
 
@@ -219,10 +226,39 @@ impl TypeChecker {
         Some(Type { mutability: Mutability::CONSTANT, primative: Primative::I32, reference: false })
     }
 
+    fn type_check_identifier(&self, identifier: &std::string::String) -> Option<Type> {
+        // todo
+        // Some(Type { mutability: Mutability::CONSTANT, primative: Primative::I32, reference: false })
+        let t = self.sym_table.get(identifier.to_string()).unwrap();
+        Some(t.to_owned())
+    }
+
     fn type_check_string(&self, s: &std::string::String) -> Option<Type> {
         // todo
         // todo primitive strings!
         Some(Type { mutability: Mutability::CONSTANT, primative: Primative::STRING, reference: false })
+    }
+
+    fn type_check_left_unary(&mut self, left_unary: &mut LeftUnary) -> Option<Type> {
+
+
+        match left_unary {
+            LeftUnary::TAKE_REFERENCE(take_reference) => {
+                let rhs = self.type_check_ast(&mut take_reference.rhs);
+                take_reference.rhs_type = rhs.unwrap(); // todo this is bad
+            }
+        }
+
+        None // todo
+    }
+    
+    fn type_check_call(&mut self, call: &mut Call) -> Option<Type> {
+
+        for arg in call.args.iter_mut() {
+            self.type_check_ast(arg);
+        }
+
+        None
     }
 
     fn type_check_binary(&mut self, binary: &mut Binary) -> Option<Type> {

@@ -5,6 +5,7 @@ use crate::parse::Assign;
 use crate::parse::Block;
 use crate::parse::Call;
 use crate::parse::Decl;
+use crate::parse::Fn;
 use crate::parse::Group;
 use crate::parse::If;
 use crate::parse::LeftUnary;
@@ -108,6 +109,9 @@ impl CGenerator<'_> {
              },
              ParsedAST::CALL(call) => {
                 self.generate_call(code, &call);
+             },
+             ParsedAST::FN(function) => {
+                self.generate_function(code, &function);
              },
              ParsedAST::NUMBER(number) => {
                 self.generate_number(code, &number);
@@ -252,9 +256,17 @@ impl CGenerator<'_> {
     fn generate_left_unary<'a>(&self, code: &mut std::string::String, left_unary: &LeftUnary){
         // todo
         match left_unary{
-            LeftUnary::TAKE_REFERENCE(value) => {
-                self.emit(code, "&".to_string());
-                self.generate_ast(code, &value);
+            LeftUnary::TAKE_REFERENCE(take_reference) => {
+
+                if take_reference.rhs_type.reference {
+                    self.emit(code, "*".to_string());
+                    self.generate_ast(code, &take_reference.rhs);
+                }else{
+                    self.emit(code, "&".to_string());
+                    self.generate_ast(code, &take_reference.rhs);
+                }
+            
+                // todo check the rhs type, because we may wan't to dereference
             }
         }
     }
@@ -282,6 +294,10 @@ impl CGenerator<'_> {
         self.emit(code, "\"".to_string());
         self.emit(code, string.to_string());
         self.emit(code, "\"".to_string());
+    }
+
+    fn generate_function<'a>(&self, code: &mut std::string::String, function: &Fn){
+        //self.emit(code, number.to_string())
     }
 
     fn generate_number<'a>(&self, code: &mut std::string::String, number: &f32){

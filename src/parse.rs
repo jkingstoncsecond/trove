@@ -44,8 +44,14 @@ pub struct Identifier<'a> {
 }
 
 #[derive(Debug)]
+pub struct TakeReference<'a> {
+    pub rhs: Box<ParsedAST<'a>>,
+    pub rhs_type: Type
+}
+
+#[derive(Debug)]
 pub enum LeftUnary<'a>{
-    TAKE_REFERENCE(Box<ParsedAST<'a>>)
+    TAKE_REFERENCE(TakeReference<'a>)
 }
 
 // todo turn this into an enum
@@ -357,7 +363,8 @@ impl Parser<'_> {
         if self.expecting(Token::AT, current) {
             self.consume(current);
             let rhs = self.call(current);
-            return ParsedAST::LEFT_UNARY(LeftUnary::TAKE_REFERENCE(Box::new(rhs)))
+            let rhs_type = Type{mutability: Mutability::CONSTANT, primative: Primative::INCOMPLETE, reference: false};
+            return ParsedAST::LEFT_UNARY(LeftUnary::TAKE_REFERENCE(TakeReference{rhs: Box::new(rhs), rhs_type}))
         }
 
         self.call(current)
