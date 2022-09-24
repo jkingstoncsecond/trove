@@ -567,10 +567,16 @@ impl Parser<'_> {
                     ParsedAST::DECL(d) => params.push(d),
                     _ => panic!("must be decl!")
                 }
+                if !self.expecting(Token::RPAREN, current) {
+                    self.consume(current);
+                }
             }
             self.consume(current);
         }
         // todo parse the return type!
+
+        // todo parse optional type :(
+
         let mut return_typ = self.parse_type(current);
         return_typ.mutability = Mutability::MUTABLE;
         let return_type = Some(Box::new(return_typ));

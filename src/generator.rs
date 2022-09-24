@@ -273,7 +273,7 @@ impl CGenerator<'_> {
                     },
                     None => {}
                 }
-                self.emit(code, ";".to_string());
+                // self.emit(code, ";".to_string());
             }
         }
     }
@@ -341,6 +341,12 @@ impl CGenerator<'_> {
             _ => panic!()
         }
         self.emit(code, "(".to_string());
+        for (i, param) in function.params.iter().enumerate() {
+            self.generate_decl(code, &param);
+            if i < function.params.len() -1 {
+                self.emit(code, ", ".to_string());
+            }
+        }
         self.emit(code, ")".to_string());
         self.emit(code, "{".to_string());
         self.generate_ast(code, &function.body);
