@@ -1,5 +1,5 @@
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 #[warn(dead_code)]
 pub enum Token {
     END,

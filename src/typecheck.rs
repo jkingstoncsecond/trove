@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-use crate::{parse::{ParsedAST, Program, Decl, Binary, Block, Fn as ParsedFn, If, Assign, LeftUnary, Call}, lex::Token};
+use crate::{parse::{ParsedAST, Program, Decl, Binary, Block, Fn as ParsedFn, If, Assign, LeftUnary, Call, Directive}, lex::Token};
 
 #[derive(Debug)]
 pub struct SymTable<K,T>{
@@ -97,6 +97,7 @@ impl TypeChecker {
     fn type_check_ast(&mut self, ast: &mut ParsedAST) -> Option<Type> {
         //println!("... ast {:?}.", ast);
         match ast {
+            ParsedAST::DIRECTIVE(directive) => self.type_check_directive(directive),
             ParsedAST::STMT(stmt) => self.type_check_ast(stmt),
             ParsedAST::PROGRAM(program) => self.type_check_program(program),
             ParsedAST::BLOCK(block) => self.type_check_block(block),
@@ -117,6 +118,10 @@ impl TypeChecker {
         }
     }
     
+    fn type_check_directive(&mut self, directive: &mut Directive) -> Option<Type> {
+        self.type_check_ast(&mut directive.body)
+    }
+
     // todo should type be optional
     fn type_check_program(&mut self, program: &mut Program) -> Option<Type> {
         for item in program.body.iter_mut() {

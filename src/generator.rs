@@ -5,6 +5,7 @@ use crate::parse::Assign;
 use crate::parse::Block;
 use crate::parse::Call;
 use crate::parse::Decl;
+use crate::parse::Directive;
 use crate::parse::Fn;
 use crate::parse::Group;
 use crate::parse::If;
@@ -73,6 +74,9 @@ impl CGenerator<'_> {
 
     fn generate_ast<'a>(&self, code: &mut std::string::String, ast: &ParsedAST){
          match ast {
+            ParsedAST::DIRECTIVE(program) => {
+                self.generate_directive(code, &program);
+            },
              ParsedAST::PROGRAM(program) => {
                  self.generate_program(code, &program);
              },
@@ -177,6 +181,21 @@ impl CGenerator<'_> {
                     false => {}
                 }
             }
+        }
+    }
+
+    fn generate_directive<'a>(&self, code: &mut std::string::String, directive: &Directive){
+        match &directive.value {
+            Token::IDENTIFIER(identifier) => {
+                match identifier.as_str() {
+                    "inline" => {
+                        self.emit(code, "inline ".to_string());
+                        self.generate_ast(code, &directive.body);
+                    },
+                    _ => {}
+                }
+            },
+            _ => panic!()
         }
     }
 

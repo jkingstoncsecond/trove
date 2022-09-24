@@ -86,6 +86,11 @@ pub struct Fn<'a>{
     pub body: Box<ParsedAST<'a>>
 }
 
+#[derive(Debug)]
+pub struct Directive<'a>{
+    pub value: Token,
+    pub body: Box<ParsedAST<'a>>
+}
 
 #[derive(Debug)]
 pub enum ParsedAST<'a> {
@@ -105,6 +110,7 @@ pub enum ParsedAST<'a> {
     CALL(Call<'a>),
     STRUCT_TYPES_LIST(StructTypesList<'a>),
     LHS_ACCESS(LhsAccess<'a>),
+    DIRECTIVE(Directive<'a>),
 }
 
 pub struct Parser<'a>{
@@ -420,6 +426,12 @@ impl Parser<'_> {
 
     fn single(&self, current: &mut usize) -> ParsedAST {
         match self.peek(current) {
+            Token::HASH => {
+                self.consume(current);
+                let value = self.consume(current);
+                let body = self.statement(current);
+                ParsedAST::DIRECTIVE(Directive { value: value.clone(), body: Box::new(body) })
+            },
             Token::TRUE => {
                 self.consume(current);
                 ParsedAST::NUMBER(1.0)
