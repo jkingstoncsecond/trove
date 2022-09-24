@@ -136,7 +136,7 @@ impl CGenerator<'_> {
                 match typ.mutability {
                     Mutability::CONSTANT => {
                         // todo
-                        self.emit(code, "int ".to_string());
+                        self.emit(code, "void ".to_string());
                         self.emit(code, func.anonymous_name.to_string());
                         self.emit(code, "() ".to_string());
                     },
