@@ -40,7 +40,7 @@ impl<K,T> SymTable<K,T> where K: Eq + Hash {
 pub struct Fn{
     pub anonymous_name: std::string::String,
     pub args: Vec<Type>,
-    // pub return_type: Type
+    pub return_type: Option<Box<Type>>
 }
 
 #[derive(Debug, Clone)]
@@ -160,6 +160,12 @@ impl TypeChecker {
 
     fn type_check_decl(&mut self, decl: &mut Decl) -> Option<Type> {
 
+        let mut decl_identifier: std::string::String;
+        match decl.identifier {
+            Token::IDENTIFIER(identifier) => decl_identifier = identifier.to_owned(),
+            _ => panic!()
+        }
+
         //println!("typecheck decl! {:?}", decl);
         // todo check if symtable contains key
         // match decl.identifi.er {
@@ -174,17 +180,31 @@ impl TypeChecker {
 
         match &mut decl.value {
             Some(val) => {
-                let value_type = self.type_check_ast(val);
-                if decl.requires_infering {
-                    // println!("typechecking {:?}.", decl.identifier);
-                    //let value_type = self.type_check_ast(&mut decl.value);
-                    // println!("... got {:?}.", value_type);
-                    // println!("got value type as {:?}.", value_type);
+                match val.as_mut() {
+                    ParsedAST::FN(func) => {
+                        let mut func_prim = &mut func.typ.primative;
+                        match func_prim {
+                            Primative::FN(prim_fn) => {
+                                prim_fn.anonymous_name = decl_identifier.to_string();
+                            },
+                            _ => panic!()
+                        }
+                        decl.typ = func.typ.to_owned();
+                    },
+                    _ => {
+                        let value_type = self.type_check_ast(val);
+                        if decl.requires_infering {
+                            // println!("typechecking {:?}.", decl.identifier);
+                            //let value_type = self.type_check_ast(&mut decl.value);
+                            // println!("... got {:?}.", value_type);
+                            // println!("got value type as {:?}.", value_type);
 
-                    match value_type {
-                        Some(t) => decl.typ.primative = t.primative,
-                        None => panic!()
-                    };
+                            match value_type {
+                                Some(t) => decl.typ.primative = t.primative,
+                                None => panic!()
+                            };
+                        }
+                    }
                 }
             },
             None => {}
@@ -223,7 +243,16 @@ impl TypeChecker {
 
     fn type_check_func(&mut self, func: &mut ParsedFn) -> Option<Type> {
         // todo
-        self.type_check_ast(&mut func.body)
+        self.type_check_ast(&mut func.body);
+        match &func.typ.primative {
+            Primative::FN(func) => {
+                match &func.return_type {
+                    Some(return_type) => return Some(*return_type.to_owned()),
+                    None => return None
+                }
+            }
+            _ => panic!()
+        }
     }
 
     fn type_check_num(&self, num: &f32) -> Option<Type> {

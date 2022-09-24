@@ -80,6 +80,9 @@ impl CGenerator<'_> {
              ParsedAST::PROGRAM(program) => {
                  self.generate_program(code, &program);
              },
+             ParsedAST::FN(func) => {
+                 self.generate_function(code, &func);
+             },
              ParsedAST::STMT(stmt) => {
                 self.generate_ast(code, stmt);
                 self.emit(code, ";".to_string());
@@ -234,11 +237,14 @@ impl CGenerator<'_> {
     }
 
     fn generate_decl<'a>(&self, code: &mut std::string::String, decl: &Decl){
+
+        println!("decl! identifier {:?} type {:?}.", decl.identifier, decl.typ);
+
         match &decl.typ.primative {
             Primative::FN(func) => {
                 // todo
                 // todo emit at global scope
-                self.generate_type(code, &decl.typ);
+                //self.generate_type(code, &decl.typ);
                 match &decl.value {
                     Some(value) => self.generate_ast(code, &value),
                     None => {}
@@ -317,6 +323,29 @@ impl CGenerator<'_> {
 
     fn generate_function<'a>(&self, code: &mut std::string::String, function: &Fn){
         //self.emit(code, number.to_string())
+
+        match &function.typ.primative {
+            Primative::FN(fun) => {
+                match &fun.return_type {
+                    Some(return_type) => self.generate_type(code, &return_type),
+                    None => self.emit(code, "void".to_string())
+                }
+            },
+            _ => panic!()
+        }
+        self.emit(code, " ".to_string());
+        match &function.typ.primative {
+            Primative::FN(func) => {
+                self.emit(code, func.anonymous_name.to_string());
+            },
+            _ => panic!()
+        }
+        self.emit(code, "(".to_string());
+        self.emit(code, ")".to_string());
+        self.emit(code, "{".to_string());
+        self.generate_ast(code, &function.body);
+        self.emit(code, "}".to_string());
+
     }
 
     fn generate_number<'a>(&self, code: &mut std::string::String, number: &f32){

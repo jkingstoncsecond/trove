@@ -82,6 +82,7 @@ pub struct Call<'a>{
 
 #[derive(Debug)]
 pub struct Fn<'a>{
+    pub typ: Type,
     pub params: Vec<Decl<'a>>,
     pub body: Box<ParsedAST<'a>>
 }
@@ -199,7 +200,8 @@ impl Parser<'_> {
                     }
                     self.consume(current);
                 }
-                return Type{reference, mutability, primative: Primative::FN(FnType{args: vec![], anonymous_name: "anon".to_string()})}
+                return Type{reference, mutability, primative: Primative::FN(FnType{
+                    args: vec![], anonymous_name: "anon".to_string(), return_type: None})}
             },
             Token::TYPE => {self.consume(current);return Type{reference, mutability, primative: Primative::TYPE(TypeType{anonymous_name: "anon".to_string()})}},
             Token::IDENTIFIER(identifier) => {self.consume(current);return Type{reference, mutability, primative: Primative::STRUCT(identifier.to_string())}},
@@ -259,19 +261,24 @@ impl Parser<'_> {
                     //  instead of parsing the fn type, just call self.fn() ?
                     Token::FN => {
                         let identifier = self.consume(current);
-                        let typ = self.parse_type(current);
+                        let typ = Type { mutability: Mutability::CONSTANT, primative: Primative::INCOMPLETE, reference: false };
+                        let value = Some(Box::new(self.function(current)));
 
-                        let mut value: Option<Box<ParsedAST>> = None;
+                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: true, value});
 
-                        // constant
-                        match self.peek(current) {
-                            Token::LCURLY => {
-                                value = Some(Box::new(self.block(current)));
-                            },
-                            _ => {}
-                        };
+                        // let typ = self.parse_type(current);
 
-                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
+                        // let mut value: Option<Box<ParsedAST>> = None;
+
+                        // // constant
+                        // match self.peek(current) {
+                        //     Token::LCURLY => {
+                        //         value = Some(Box::new(self.block(current)));
+                        //     },
+                        //     _ => {}
+                        // };
+
+                        // return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
                     },
                     // todo we need to match for a type here instead of identifier
                     Token::AT |Token::VAR | Token::MUT | Token::CONST | Token::PUB | Token::PRIV | Token::U32 | Token::I32 | Token::BOOL | Token::IDENTIFIER(_) => {
@@ -563,8 +570,17 @@ impl Parser<'_> {
             }
             self.consume(current);
         }
+        // todo parse the return type!
+        let mut return_typ = self.parse_type(current);
+        return_typ.mutability = Mutability::MUTABLE;
+        let return_type = Some(Box::new(return_typ));
         // umm this should be expression but currently blocks are stmts :(
         let body = self.statement(current);
-        ParsedAST::FN(Fn{params, body: Box::new(body)})
+        let typ = Type{ mutability: Mutability::CONSTANT, primative: Primative::FN(FnType{
+            anonymous_name: "anon".to_string(),
+            args: vec![], // todo!
+            return_type
+        }), reference: false };
+        ParsedAST::FN(Fn{params, typ, body: Box::new(body)})
     }
 }
