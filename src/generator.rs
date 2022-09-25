@@ -85,7 +85,7 @@ impl CGenerator<'_> {
              },
              ParsedAST::STMT(stmt) => {
                 self.generate_ast(code, stmt);
-                self.emit(code, ";".to_string());
+                self.emit(code, ";\n".to_string());
              },
              ParsedAST::BLOCK(block) => {
                  self.generate_block(code, &block);
@@ -172,6 +172,7 @@ impl CGenerator<'_> {
                 match typ {
                     Type{primative: Primative::U32, ..} => self.emit(code, "unsigned int".to_string()),
                     Type{primative: Primative::I32, ..} => self.emit(code, "int".to_string()),
+                    Type{primative: Primative::F32, ..} => self.emit(code, "float".to_string()),
                     Type{primative: Primative::BOOL, ..} => self.emit(code, "unsigned int".to_string()),
                     Type{primative: Primative::STRING, ..} => self.emit(code, "char*".to_string()),
                     Type{primative: Primative::STRUCT(identifier), ..} => self.emit(code, identifier.to_string()),
@@ -388,6 +389,7 @@ impl CGenerator<'_> {
         self.emit(code, "{".to_string());
         for decl in struct_types_list.types.iter() {
             self.generate_decl(code, decl);
+            self.emit(code, ";\n".to_string());
         }
         self.emit(code, "}".to_string());
     }

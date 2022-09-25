@@ -53,6 +53,7 @@ pub enum Primative{
     INCOMPLETE,
     U32,
     I32,
+    F32,
     BOOL,
     STRING,
     FN(Fn),

@@ -191,6 +191,7 @@ impl Parser<'_> {
             Token::VAR => {self.consume(current);return Type{reference, mutability, primative: Primative::INCOMPLETE}},
             Token::U32 => {self.consume(current);return Type{reference, mutability, primative: Primative::U32}},
             Token::I32 => {self.consume(current);return Type{reference, mutability, primative: Primative::I32}},
+            Token::F32 => {self.consume(current);return Type{reference, mutability, primative: Primative::F32}},
             Token::BOOL => {self.consume(current);return Type{reference, mutability, primative: Primative::BOOL}},
             Token::FN => {
                 self.consume(current);
@@ -283,7 +284,7 @@ impl Parser<'_> {
                         // return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
                     },
                     // todo we need to match for a type here instead of identifier
-                    Token::AT |Token::VAR | Token::MUT | Token::CONST | Token::PUB | Token::PRIV | Token::U32 | Token::I32 | Token::BOOL | Token::IDENTIFIER(_) => {
+                    Token::AT |Token::VAR | Token::MUT | Token::CONST | Token::PUB | Token::PRIV | Token::U32 | Token::I32 | Token::F32 | Token::BOOL | Token::IDENTIFIER(_) => {
 
                         let identifier = self.consume(current);
                         let typ = self.parse_type(current);

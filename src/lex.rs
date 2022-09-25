@@ -40,6 +40,7 @@ pub enum Token {
 
     U32,
     I32,
+    F32,
     BOOL,
     FN,
     TYPE,
@@ -148,6 +149,9 @@ impl Lexer {
                     }else if self.is_keyword("fn".to_string()) {
                         self.tokens.push(Token::FN);
                         self.current+=1; // its only 2 because we + 1 later
+                    }else if self.is_keyword("f32".to_string()) {
+                        self.tokens.push(Token::F32);
+                        self.current+=2; // its only 2 because we + 1 later
                     }else{
                         // todo do identifier
                         self.other();
