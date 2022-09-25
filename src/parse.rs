@@ -575,7 +575,7 @@ impl Parser<'_> {
 
         // todo how do we expect a value?
 
-        return ParsedAST::RET(None);
+        return ParsedAST::RET(Some(Box::new(self.expression(current))));
     }
 
     fn struct_types_list(&self, current: &mut usize) -> ParsedAST {

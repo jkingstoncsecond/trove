@@ -250,7 +250,11 @@ impl CGenerator<'_> {
     }
 
     fn generate_ret<'a>(&self, code: &mut std::string::String, ret: &Option<Box<ParsedAST<'a>>>){
-        self.emit(code, "return".to_string());
+        self.emit(code, "return ".to_string());
+        match ret {
+            Some(ast) => self.generate_ast(code, ast),
+            None => {}
+        }
     }
 
     fn generate_assign<'a>(&self, code: &mut std::string::String, assign: &Assign){

@@ -26,10 +26,11 @@ impl Analyser{
             ParsedAST::STMT(stmt) => self.analyse_stmt(analysis_context, stmt),
             ParsedAST::DECL(decl) => self.analyse_decl(analysis_context, decl),
             ParsedAST::FN(func) => self.analyse_func(analysis_context, func),
+            ParsedAST::RET(ret) => self.analyse_ret(analysis_context, ret),
             ParsedAST::LEFT_UNARY(left_unary) => 
                 // umm how do we do this...
                 self.analyse_left_unary(analysis_context, ast),
-            _ => panic!()
+            _ => {}
         }
     }
 
@@ -66,6 +67,13 @@ impl Analyser{
         self.analyse_ast(analysis_context, &mut func.body);
     }
 
+    fn analyse_ret(&mut self, analysis_context: &mut AnalysisContext, ret: &mut Option<Box<ParsedAST>>) {
+        match ret {
+            Some(ast) => self.analyse_ast(analysis_context, ast),
+            None => {}
+        }
+    }
+
 
     fn analyse_left_unary(&mut self, 
         analysis_context: &mut AnalysisContext, 
@@ -84,8 +92,9 @@ impl Analyser{
                         // todo should we associate a type with every ast???
                         let rhs_type_size = 9;
                         if rhs_type_size >= HEAP_ALLOC_THRESHOLD {
-                            // todo insert a malloc here
-                            // todo insert a heap allocation here!
+
+                            // todo this is all wrong as the ast is a bit fudged here!
+                            
                             println!("HEAP_ALLOC_THRESHOLD reached!");
                             let heap_alloc_fn = ParsedAST::IDENTIFIER("malloc".to_string());
                             let heap_alloc_args = ParsedAST::NUMBER(rhs_type_size as f32);
@@ -106,9 +115,10 @@ impl Analyser{
                                     rhs_type: Type { mutability: Mutability::CONSTANT, primative: Primative::I32, reference: true }
                                 }
                             ));
-                            let rhs = &value.rhs;
+                            // let rhs = value.rhs.as_mut();
                             let heap_alloc_assign = ParsedAST::ASSIGN(
                                 Assign{ lhs: Box::new(heap_alloc_assign_lhs), rhs: Box::new(ParsedAST::NUMBER(1.2)) });
+                                // Assign{ lhs: Box::new(heap_alloc_assign_lhs), rhs: Box::new(rhs.) });
                             
                             
                                 // todo set the left unary value?
@@ -117,7 +127,7 @@ impl Analyser{
                                 body: vec![
                                     ParsedAST::STMT(Box::new(heap_alloc_decl)), 
                                     ParsedAST::STMT(Box::new(heap_alloc_assign))
-                                        ]
+                                ]
                             });
                             *left_unary_ast = block;    
                         }
