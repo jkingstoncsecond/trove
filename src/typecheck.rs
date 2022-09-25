@@ -36,19 +36,19 @@ impl<K,T> SymTable<K,T> where K: Eq + Hash {
 
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Fn{
     pub anonymous_name: std::string::String,
     pub args: Vec<Type>,
     pub return_type: Option<Box<Type>>
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TypeType{
     pub anonymous_name: std::string::String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Primative{
     INCOMPLETE,
     U32,
@@ -62,17 +62,40 @@ pub enum Primative{
     STRUCT(std::string::String)
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mutability {
     MUTABLE,
     CONSTANT
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Type {
     pub mutability: Mutability,
     pub primative: Primative,
     pub reference: bool
+}
+
+impl Type {
+    // i.e. say we have &f32 and we want to call to_string() which takes a 
+    // f32, we *can* cast the &f32 to a f32 by doing *f32 on the ptr.
+    // if this returns true, we need to perform the dereferencing!
+    fn can_be_autocast(&self, other: Type) -> bool {
+        // todo we then will need to insert a 
+        // todo this is only for reference casting
+        if self.primative.eq(&other.primative) && (!self.reference && other.reference) {
+            return true
+        }
+        false
+    }
+
+    fn shallow_equal(&self, other: Type) -> bool {
+        // todo we then will need to insert a 
+        // todo this is only for reference casting
+        if self.primative.eq(&other.primative) {
+            return true
+        }
+        false
+    }
 }
 
 pub struct TypeChecker {
@@ -155,30 +178,41 @@ impl TypeChecker {
     }
 
     fn type_check_assign(&mut self, assign: &mut Assign) -> Option<Type> {
-        self.type_check_ast(&mut assign.lhs);
-        self.type_check_ast(&mut assign.rhs);
+        let lhs_type = self.type_check_ast(&mut assign.lhs);
+        let rhs_type = self.type_check_ast(&mut assign.rhs);
+
+        println!("lhs type {:?} rhs type {:?}", lhs_type, rhs_type);
+
+        if !lhs_type.unwrap().shallow_equal(rhs_type.unwrap()){
+
+
+            // check if we can auto-cast
+            // if lhs_type.as_ref().unwrap().can_be_autocast(rhs_type.as_ref().unwrap().clone()) {
+
+            // }
+
+            panic!("types do not equal!");
+        }
+        // todo 
+        // println!("ummm {:?}", lhs_type.unwrap().ref_can_be_assigned(rhs_type.unwrap()));
+        // if lhs_type.unwrap().ref_can_be_assigned(rhs_type.unwrap()){
+        //     println!("derefreencing!!!")
+
+        //     // todo insert a dereference here somehow!
+
+        // }
         None
     }
 
     fn type_check_decl(&mut self, decl: &mut Decl) -> Option<Type> {
+
+        println!("doing decl... {:?}", decl.identifier);
 
         let mut decl_identifier: std::string::String;
         match decl.identifier {
             Token::IDENTIFIER(identifier) => decl_identifier = identifier.to_owned(),
             _ => panic!()
         }
-
-        //println!("typecheck decl! {:?}", decl);
-        // todo check if symtable contains key
-        // match decl.identifi.er {
-        //     Token::IDENTIFIER(identifier) => {
-        //         match self.sym_table.get(identifier.to_string()) {
-        //             Some(_) => panic!("symbol already declared!"),
-        //             None => self.sym_table.add(identifier.to_string(), decl.typ)// todo
-        //         }
-        //     },
-        //     _ => panic!()
-        // }
 
         match &mut decl.value {
             Some(val) => {
@@ -192,6 +226,8 @@ impl TypeChecker {
                             _ => panic!()
                         }
                         decl.typ = func.typ.to_owned();
+                        self.type_check_func(func);
+                        // self.type_check_ast(&mut func.body);
                     },
                     _ => {
                         let value_type = self.type_check_ast(val);
@@ -206,6 +242,7 @@ impl TypeChecker {
                                 None => panic!()
                             };
                         }
+                        self.type_check_ast(val);
                     }
                 }
             },
@@ -240,11 +277,19 @@ impl TypeChecker {
             _ => panic!()
         }
 
+        println!("sym table {:?}", self.sym_table);
+
         None
     }
 
     fn type_check_func(&mut self, func: &mut ParsedFn) -> Option<Type> {
         // todo
+        for param in func.params.iter_mut(){
+            self.type_check_decl(param);
+        }
+
+        println!("type checking func! sym_table {:?}", self.sym_table);
+
         self.type_check_ast(&mut func.body);
         match &func.typ.primative {
             Primative::FN(func) => {
@@ -264,6 +309,9 @@ impl TypeChecker {
 
     fn type_check_identifier(&self, identifier: &std::string::String) -> Option<Type> {
         // todo
+
+        println!("ummm {:?}", self.sym_table);
+
         // Some(Type { mutability: Mutability::CONSTANT, primative: Primative::I32, reference: false })
         let t = self.sym_table.get(identifier.to_string()).unwrap();
         Some(t.to_owned())
@@ -289,6 +337,7 @@ impl TypeChecker {
     }
     
     fn type_check_call(&mut self, call: &mut Call) -> Option<Type> {
+        
 
         for arg in call.args.iter_mut() {
             self.type_check_ast(arg);

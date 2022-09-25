@@ -50,8 +50,6 @@ impl Generator for CGenerator<'_> {
 
         self.generate_ast(&mut code, &self.ast);
 
-        println!("{}", code);
-
         code
     }
 }
@@ -246,8 +244,6 @@ impl CGenerator<'_> {
     }
 
     fn generate_decl<'a>(&self, code: &mut std::string::String, decl: &Decl){
-
-        println!("decl! identifier {:?} type {:?}.", decl.identifier, decl.typ);
 
         match &decl.typ.primative {
             Primative::FN(func) => {
