@@ -99,6 +99,7 @@ pub enum ParsedAST<'a> {
     STMT(Box<ParsedAST<'a>>),
     BLOCK(Block<'a>),
     IF(If<'a>),
+    RET(Option<Box<ParsedAST<'a>>>),
     DECL(Decl<'a>),
     ASSIGN(Assign<'a>),
     IDENTIFIER(std::string::String),
@@ -214,6 +215,7 @@ impl Parser<'_> {
         match self.peek(&current) {
             Token::LCURLY => self.block(current),
             Token::IF => self.if_stmt(current),
+            Token::RET => self.ret(current),
             _ => ParsedAST::STMT(Box::new(self.expression(current)))
         }
     }
@@ -534,6 +536,15 @@ impl Parser<'_> {
         }
 
         return ParsedAST::IF(If{condition, body, else_body });
+    }
+
+    fn ret(&self, current: &mut usize) -> ParsedAST {
+        
+        self.consume(current); // consume the return
+
+        // todo how do we expect a value?
+
+        return ParsedAST::RET(None);
     }
 
     fn struct_types_list(&self, current: &mut usize) -> ParsedAST {

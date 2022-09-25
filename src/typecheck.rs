@@ -102,6 +102,7 @@ impl TypeChecker {
             ParsedAST::PROGRAM(program) => self.type_check_program(program),
             ParsedAST::BLOCK(block) => self.type_check_block(block),
             ParsedAST::IF(iff) => self.type_check_if(iff),
+            ParsedAST::RET(ret) => None,
             ParsedAST::DECL(decl) => self.type_check_decl(decl),
             ParsedAST::ASSIGN(assign) => self.type_check_assign(assign),
             ParsedAST::FN(func) => self.type_check_func(func),

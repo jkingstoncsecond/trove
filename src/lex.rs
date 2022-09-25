@@ -48,7 +48,9 @@ pub enum Token {
     FALSE,
 
     IF,
-    ELSE
+    ELSE,
+
+    RET
 
 }
 
@@ -182,6 +184,16 @@ impl Lexer {
                     }else if self.is_keyword("priv".to_string()) {
                         self.tokens.push(Token::PRIV);
                         self.current+=3; // its only 3 because we + 1 later
+                    }else{
+                        // todo do identifier
+                        self.other();
+                        continue;
+                    }
+                },
+                'r' => {
+                    if self.is_keyword("ret".to_string()) {
+                        self.tokens.push(Token::RET);
+                        self.current+=2; // its only 2 because we + 1 later
                     }else{
                         // todo do identifier
                         self.other();

@@ -93,6 +93,9 @@ impl CGenerator<'_> {
              ParsedAST::IF(iff) => {
                  self.generate_if(code, &iff);
              },
+             ParsedAST::RET(ret) => {
+                 self.generate_ret(code, &ret);
+             },
              ParsedAST::DECL(decl) => {
                  self.generate_decl(code, &decl);
              },
@@ -172,6 +175,7 @@ impl CGenerator<'_> {
                     Type{primative: Primative::BOOL, ..} => self.emit(code, "unsigned int".to_string()),
                     Type{primative: Primative::STRING, ..} => self.emit(code, "char*".to_string()),
                     Type{primative: Primative::STRUCT(identifier), ..} => self.emit(code, identifier.to_string()),
+                    Type{primative: Primative::INCOMPLETE, ..} => self.emit(code, "void".to_string()),
                     // Type{primative: Primative::TYPE(typeType), ..} => {
                     //     self.emit(code, "struct ".to_string());
                     //     // todo get the struct anonymouse name
@@ -228,6 +232,10 @@ impl CGenerator<'_> {
             }
             None => {}
         }
+    }
+
+    fn generate_ret<'a>(&self, code: &mut std::string::String, ret: &Option<Box<ParsedAST<'a>>>){
+        self.emit(code, "return".to_string());
     }
 
     fn generate_assign<'a>(&self, code: &mut std::string::String, assign: &Assign){
