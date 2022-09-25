@@ -6,6 +6,7 @@ mod lex;
 mod parse;
 mod generator;
 mod typecheck;
+mod analyser;
 
 fn main() {
 
@@ -23,6 +24,9 @@ fn main() {
     let mut new_ast = type_checker.type_check(ast);
 
     //println!("ast {:?}.", new_ast);
+
+    let mut analyser = analyser::Analyser{};
+    new_ast = analyser.analyse(new_ast);
 
     let generator = generator::CGenerator::new(&new_ast);
     let code = generator.generate();
