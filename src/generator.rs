@@ -367,9 +367,11 @@ impl CGenerator<'_> {
     fn generate_call<'a>(&self, code: &mut std::string::String, call: &Call){
         self.generate_ast(code, &call.callee);
         self.emit(code, "(".to_string());
-        match &call.args {
-            Some(args) => self.generate_ast(code, &args),
-            None => {}
+        for (i, arg) in call.args.iter().enumerate() {
+            self.generate_ast(code, arg);
+            if i < call.args.len() - 1 {
+                self.emit(code, ", ".to_string());
+            }
         }
         self.emit(code, ")".to_string());
     }

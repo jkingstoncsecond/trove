@@ -77,7 +77,7 @@ pub struct Group<'a>{
 #[derive(Debug)]
 pub struct Call<'a>{
     pub callee: Box<ParsedAST<'a>>,
-    pub args: Option<Box<ParsedAST<'a>>>
+    pub args: Vec<ParsedAST<'a>>    
 }
 
 #[derive(Debug)]
@@ -394,17 +394,15 @@ impl Parser<'_> {
                         match self.peek(current) {
                             Token::LPAREN => {
                                 self.consume(current);
-
-                                // todo SUPPORT NO ARGS
-                                if !self.expecting(Token::RPAREN, current){
-                                    let expr = self.expression(current);
-                                    self.consume(current);
-                                    return ParsedAST::CALL(Call{callee: Box::new(higher_presedence), args: Some(Box::new(expr))})
-                                }else{
-                                    self.consume(current);
-                                    return ParsedAST::CALL(Call{callee: Box::new(higher_presedence), args: None})
+                                let mut args: Vec<ParsedAST> = vec![];
+                                while !self.expecting(Token::RPAREN, current){
+                                    args.push(self.expression(current));
+                                    if !self.expecting(Token::RPAREN, current) {
+                                        self.consume(current); // consume the ,
+                                    }
                                 }
-                                
+                                self.consume(current); // consume the )
+                                return ParsedAST::CALL(Call{callee: Box::new(higher_presedence), args})
                             }
                             _ => return higher_presedence
                         }
