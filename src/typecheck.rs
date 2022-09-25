@@ -79,6 +79,17 @@ impl Type {
     // i.e. say we have &f32 and we want to call to_string() which takes a 
     // f32, we *can* cast the &f32 to a f32 by doing *f32 on the ptr.
     // if this returns true, we need to perform the dereferencing!
+
+    fn size_in_bytes(&self) -> usize {
+        // todo check if ref!
+        match self.primative {
+            Primative::U32 => 4,
+            Primative::I32 => 4,
+            Primative::F32 => 4,
+            _ => panic!()
+        }
+    }
+
     fn can_be_autocast(&self, other: Type) -> bool {
         // todo we then will need to insert a 
         // todo this is only for reference casting
@@ -110,7 +121,6 @@ impl TypeChecker {
     }
 
     pub fn type_check<'a>(&mut self, mut tmp: Box<ParsedAST<'a>>) -> Box<ParsedAST<'a>> {
-        println!("typechecking...");
 
         self.type_check_ast(tmp.as_mut()); // hmm can we do this without it being mutable? NO!
         //let x: ParsedAST<'a> = *tmp;
@@ -208,13 +218,7 @@ impl TypeChecker {
     fn type_check_decl(&mut self, decl: &mut Decl) -> Option<Type> {
 
         println!("doing decl... {:?}", decl.identifier);
-
-        let mut decl_identifier: std::string::String;
-        match decl.identifier {
-            Token::IDENTIFIER(identifier) => decl_identifier = identifier.to_owned(),
-            _ => panic!()
-        }
-
+        
         match &mut decl.value {
             Some(val) => {
                 match val.as_mut() {
@@ -222,7 +226,7 @@ impl TypeChecker {
                         let mut func_prim = &mut func.typ.primative;
                         match func_prim {
                             Primative::FN(prim_fn) => {
-                                prim_fn.anonymous_name = decl_identifier.to_string();
+                                prim_fn.anonymous_name = decl.identifier.to_string();
                             },
                             _ => panic!()
                         }
@@ -253,32 +257,15 @@ impl TypeChecker {
 
         match &mut decl.typ {
             Type{primative: Primative::FN(func), ..} => {
-                match decl.identifier {
-                    Token::IDENTIFIER(identifier) => {
-                        func.anonymous_name = identifier.to_string()
-                    },
-                    _ => panic!()
-                }
+                func.anonymous_name = decl.identifier.to_string();
             },
             Type{primative: Primative::TYPE(typeType), ..} => {
-                match decl.identifier {
-                    Token::IDENTIFIER(identifier) => {
-                        typeType.anonymous_name = identifier.to_string()
-                    },
-                    _ => panic!()
-                }
+                typeType.anonymous_name = decl.identifier.to_string();
             }
             _ => {}
         };
 
-        println!("type check decl! {:?} {:?}.", decl.identifier.to_owned(), decl.typ);
-
-        match decl.identifier {
-            Token::IDENTIFIER(identifier) => self.sym_table.add(identifier.to_string(), decl.typ.to_owned()),
-            _ => panic!()
-        }
-
-        println!("sym table {:?}", self.sym_table);
+        self.sym_table.add(decl.identifier.to_string(), decl.typ.to_owned());
 
         None
     }
@@ -288,8 +275,6 @@ impl TypeChecker {
         for param in func.params.iter_mut(){
             self.type_check_decl(param);
         }
-
-        println!("type checking func! sym_table {:?}", self.sym_table);
 
         self.type_check_ast(&mut func.body);
         match &func.typ.primative {

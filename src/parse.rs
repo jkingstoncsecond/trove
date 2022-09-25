@@ -9,6 +9,7 @@ pub struct Program<'a>{
 
 #[derive(Debug)]
 pub struct Block<'a>{
+    pub new_scope: bool,
     pub body: Vec<ParsedAST<'a>>
 }
 
@@ -19,7 +20,7 @@ pub struct StructTypesList<'a>{
 
 #[derive(Debug)]
 pub struct Decl<'a>{
-    pub identifier: &'a Token,
+    pub identifier: std::string::String,
     pub typ: Type,
     pub requires_infering: bool,
     pub value: Option<Box<ParsedAST<'a>>>,
@@ -140,7 +141,6 @@ impl Parser<'_> {
         
         while !self.end(&current){
             body.push(self.statement(&mut current));
-            println!("done statement :)");
         }
         
         return ParsedAST::PROGRAM(Program{body: body});
@@ -259,7 +259,12 @@ impl Parser<'_> {
                             _ => {}
                         };
 
-                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
+                        let mut ident: std::string::String;
+                        match identifier {
+                            Token::IDENTIFIER(i) => ident = i.to_string(),
+                            _ => panic!()
+                        }
+                        return ParsedAST::DECL(Decl{identifier: ident, typ, requires_infering: false, value})
                     },
                     // todo
                     //  instead of parsing the fn type, just call self.fn() ?
@@ -267,8 +272,12 @@ impl Parser<'_> {
                         let identifier = self.consume(current);
                         let typ = Type { mutability: Mutability::CONSTANT, primative: Primative::INCOMPLETE, reference: false };
                         let value = Some(Box::new(self.function(current)));
-
-                        return ParsedAST::DECL(Decl{identifier, typ, requires_infering: true, value});
+                        let mut ident: std::string::String;
+                        match identifier {
+                            Token::IDENTIFIER(i) => ident = i.to_string(),
+                            _ => panic!()
+                        }
+                        return ParsedAST::DECL(Decl{identifier: ident, typ, requires_infering: true, value});
 
                         // let typ = self.parse_type(current);
 
@@ -292,6 +301,12 @@ impl Parser<'_> {
 
                         let mut value: Option<Box<ParsedAST>> = None;
 
+                        let mut ident: std::string::String;
+                        match identifier {
+                            Token::IDENTIFIER(i) => ident = i.to_string(),
+                            _ => panic!()
+                        }
+
                         // constant
                         match self.peek(current) {
                             Token::EQUAL => {
@@ -302,8 +317,8 @@ impl Parser<'_> {
                         };
 
                         match typ.primative {
-                            Primative::INCOMPLETE => return ParsedAST::DECL(Decl{identifier, typ, requires_infering: true, value}),
-                            _ => return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
+                            Primative::INCOMPLETE => return ParsedAST::DECL(Decl{identifier: ident, typ, requires_infering: true, value}),
+                            _ => return ParsedAST::DECL(Decl{identifier: ident, typ, requires_infering: false, value})
                         }
                     },
                     Token::EQUAL => {
@@ -535,7 +550,7 @@ impl Parser<'_> {
             body.push(self.statement(current));
         }
         self.consume(current);
-        return ParsedAST::BLOCK(Block{body});
+        return ParsedAST::BLOCK(Block{new_scope: true, body});
     }
 
     fn if_stmt(&self, current: &mut usize) -> ParsedAST {

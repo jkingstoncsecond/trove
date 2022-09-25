@@ -25,6 +25,9 @@ fn main() {
 
     //println!("ast {:?}.", new_ast);
 
+    /*
+    
+    */
     let mut analyser = analyser::Analyser{};
     new_ast = analyser.analyse(new_ast);
 
@@ -41,10 +44,10 @@ fn main() {
         .output()
         .expect("Unable to compile code");
 
-    print!("{}", String::from_utf8(std::process::Command::new("otool")
-        .arg("-tvV")
-        .arg("build/build")
-        .output().unwrap().stdout).unwrap());
+    // print!("{}", String::from_utf8(std::process::Command::new("otool")
+    //     .arg("-tvV")
+    //     .arg("build/build")
+    //     .output().unwrap().stdout).unwrap());
 
     unsafe {
         println!("creating context.");

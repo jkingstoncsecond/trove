@@ -224,11 +224,15 @@ impl CGenerator<'_> {
     }
 
     fn generate_block<'a>(&self, code: &mut std::string::String, block: &Block){
-        self.emit(code, "{".to_string());
+        if block.new_scope {
+            self.emit(code, "{".to_string());
+        }
         for item in block.body.iter() {
             self.generate_ast(code, item);
         }
-        self.emit(code,"}".to_string());
+        if block.new_scope {
+            self.emit(code,"}".to_string());
+        }
     }
 
     fn generate_if<'a>(&self, code: &mut std::string::String, iff: &If){
@@ -279,10 +283,7 @@ impl CGenerator<'_> {
             _ => {
                 self.generate_type(code, &decl.typ);
                 self.emit(code, " ".to_string());
-                match decl.identifier {
-                    Token::IDENTIFIER(value) => self.emit(code, value.to_string()),
-                    _ => panic!()
-                }
+                self.emit(code, decl.identifier.to_string());
                 match &decl.value {
                     Some(value) => {
                         self.emit(code, "=".to_string());
