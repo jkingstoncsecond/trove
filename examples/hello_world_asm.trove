@@ -1,0 +1,9 @@
+#asm("helloworld:      .ascii  \"Hello World!\n\"") 
+
+main fn i32 {
+    #asm("adrp X1, helloworld@PAGE")
+    #asm("add X1, X1, helloworld@PAGEOFF")
+    #asm("mov X2, #13")
+    #asm("mov X16, #4")
+    #asm("svc 0")
+}

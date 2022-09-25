@@ -196,7 +196,19 @@ impl CGenerator<'_> {
                 match identifier.as_str() {
                     "inline" => {
                         self.emit(code, "inline ".to_string());
-                        self.generate_ast(code, &directive.body);
+                        //self.generate_ast(code, &directive.body.unwrap());
+                    },
+                    "asm" => {
+                        self.emit(code, "asm(\"".to_string());
+
+                        match directive.args.get(0) {
+                            Some(ParsedAST::STRING(s)) => {
+                                self.emit(code, s.to_string());
+                            },
+                            _ => panic!()
+                        }
+
+                        self.emit(code, "\")".to_string());
                     },
                     _ => {}
                 }

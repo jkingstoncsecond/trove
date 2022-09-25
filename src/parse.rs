@@ -90,7 +90,8 @@ pub struct Fn<'a>{
 #[derive(Debug)]
 pub struct Directive<'a>{
     pub value: Token,
-    pub body: Box<ParsedAST<'a>>
+    pub args: Vec<ParsedAST<'a>>,
+    pub body: Option<Box<ParsedAST<'a>>>
 }
 
 #[derive(Debug)]
@@ -437,8 +438,22 @@ impl Parser<'_> {
             Token::HASH => {
                 self.consume(current);
                 let value = self.consume(current);
-                let body = self.statement(current);
-                ParsedAST::DIRECTIVE(Directive { value: value.clone(), body: Box::new(body) })
+                let mut args: Vec<ParsedAST> = vec![];
+                if(self.expecting(Token::LPAREN, current)){
+                    self.consume(current);
+
+                    while !self.expecting(Token::RPAREN, current) {
+                        args.push(self.expression(current));
+                        if !self.expecting(Token::RPAREN, current){
+                            self.consume(current); // consume the ,
+                        }
+                    }
+
+                    self.consume(current); // consume the rparen
+                }
+                // todo directives don't need bodies!
+                //let body = self.statement(current);
+                ParsedAST::DIRECTIVE(Directive { value: value.clone(), args, body: None })
             },
             Token::TRUE => {
                 self.consume(current);

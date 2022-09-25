@@ -37,6 +37,11 @@ fn main() {
         .output()
         .expect("Unable to compile code");
 
+    print!("{}", String::from_utf8(std::process::Command::new("otool")
+        .arg("-tvV")
+        .arg("build/build")
+        .output().unwrap().stdout).unwrap());
+
     unsafe {
         println!("creating context.");
         let context = llvm_sys::core::LLVMContextCreate();

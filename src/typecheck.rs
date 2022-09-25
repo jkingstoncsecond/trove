@@ -144,7 +144,8 @@ impl TypeChecker {
     }
     
     fn type_check_directive(&mut self, directive: &mut Directive) -> Option<Type> {
-        self.type_check_ast(&mut directive.body)
+        //self.type_check_ast(&mut directive.body.unwrap())
+        None
     }
 
     // todo should type be optional

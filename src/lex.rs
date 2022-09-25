@@ -318,8 +318,23 @@ impl Lexer {
         let mut s = std::string::String::from("");
         while !self.end() && 
         !self.program.chars().nth(self.current).unwrap().eq_ignore_ascii_case(&first_char){
-            s.push(self.program.chars().nth(self.current).unwrap());
-            self.current+=1;
+            match self.program.chars().nth(self.current).unwrap(){
+                '\\' => {
+                    println!("found backslash!");
+                    match self.program.chars().nth(self.current+1).unwrap() {
+                        '"' => {s.push_str("\\\""); self.current+=2;},
+                        '\'' => {s.push_str("\\'"); self.current+=2;},
+                        'n' => {s.push_str("\\n"); self.current+=2;},
+                        't' => {s.push_str("\\t"); self.current+=2;},
+                        _ => {panic!()}
+                    }
+
+                },
+                _ => {
+                    s.push(self.program.chars().nth(self.current).unwrap());
+                    self.current+=1;
+                }
+            }
         }
         self.current+=1;
         self.tokens.push(Token::STRING(s));
