@@ -2,6 +2,7 @@
 trove programming language
 
 # todo
+- parse floats (these cause issues in heap analysis)
 - escape codes
 - figure out a way of checking if an ast has a following statement (return x and #directive body)
 - directives (asm)

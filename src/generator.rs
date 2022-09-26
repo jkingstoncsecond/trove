@@ -383,7 +383,12 @@ impl CGenerator<'_> {
                 }else{
                     if(take_reference.is_heap_alloc){
                         self.current_block().new_stmt_at(0);
-                        self.current_block().append_current("int* tmp = (int*) malloc(sizeof(234));\n".to_string());
+                        let mut lhs_type = take_reference.rhs_type.to_owned();
+                        lhs_type.mutability = Mutability::MUTABLE;
+                        self.generate_type(code, &lhs_type);
+                        self.current_block().append_current("* tmp = (int*) malloc(sizeof(".to_string());
+                        self.current_block().append_current(take_reference.rhs_type.size_in_bytes().to_string());
+                        self.current_block().append_current("));\n".to_string());
 
 
                         // self.current_block().new_stmt_at(-1);

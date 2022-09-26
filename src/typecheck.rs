@@ -80,7 +80,7 @@ impl Type {
     // f32, we *can* cast the &f32 to a f32 by doing *f32 on the ptr.
     // if this returns true, we need to perform the dereferencing!
 
-    fn size_in_bytes(&self) -> usize {
+    pub fn size_in_bytes(&self) -> usize {
         // todo check if ref!
         match self.primative {
             Primative::U32 => 4,
