@@ -88,22 +88,23 @@ impl Generator for CGenerator<'_> {
         let mut code = "".to_string();
 
         
-        // self.current_block().new_stmt();
-        // self.current_block().append_current("
-        // #include <cstdio>
+        self.current_block().new_stmt();
+        self.current_block().append_current("
+        #include <cstdio>
+        #include <cstdlib>
         
-        // void println(int* x){
-        //     printf(\"ptr='%s'\\n\", (void*)x);
-        // } 
+        void println(int* x){
+            printf(\"ptr='%s'\\n\", (void*)x);
+        } 
         
-        // void println(int x){
-        //     printf(\"%d\\n\", x);
-        // } 
+        void println(int x){
+            printf(\"%d\\n\", x);
+        } 
         
-        // void println(const char* arg){
-        //     printf(\"%s\\n\", arg);
-        // }
-        // ".to_string());// int main(){".to_string());
+        void println(const char* arg){
+            printf(\"%s\\n\", arg);
+        }
+        ".to_string());// int main(){".to_string());
 
         self.generate_ast(&mut code, &self.ast);
 
@@ -380,11 +381,6 @@ impl CGenerator<'_> {
                     self.generate_ast(code, &take_reference.rhs);
                 }else{
                     if(take_reference.is_heap_alloc){
-                        // todo these 2 statements should be 'before' the current stmts
-                        let old_index = self.current_block().index;
-
-                        println!("...before {:?}", self.current_block());
-
                         self.current_block().new_stmt_at(0);
                         self.current_block().append_current("int* tmp = (int*) malloc(sizeof(234));\n".to_string());
 
@@ -397,25 +393,9 @@ impl CGenerator<'_> {
                         self.generate_ast(code, &take_reference.rhs);
                         self.current_block().append_current(";".to_string());
 
-                        println!("...after {:?}", self.current_block());
-
-                        // this is breaking stuff :(
-                        println!("umm old index? {:?}", old_index);
                         self.current_block().index = self.current_block().index + 1;
 
                         self.current_block().append_current("tmp".to_string());
-                        // todo we need to update this bc we've added 2 stmts
-                        // self.current_block().index = self.current_block().statements.len()-1; 
-                        
-                        
-                        // todo we need to set the index here?
-                        // let old_index = self.current_block().index;
-                        // self.current_block().index = old_index-1;
-                        // self.generate_ast(code, &take_reference.rhs);
-                        // self.current_block().append_current(";".to_string());
-                        // self.current_block().append_current(code)
-
-                        // self.current_block().index = old_index;
                     }else{
                         self.current_block().append_current("&".to_string());
                         self.generate_ast(code, &take_reference.rhs);
