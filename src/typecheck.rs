@@ -242,8 +242,12 @@ impl TypeChecker {
                             // println!("... got {:?}.", value_type);
                             // println!("got value type as {:?}.", value_type);
 
+                            println!("... infering value_type {:?}", value_type);
                             match value_type {
-                                Some(t) => decl.typ.primative = t.primative,
+                                Some(t) => {
+                                    decl.typ.primative = t.primative;
+                                    decl.typ.reference = t.reference;
+                                },
                                 None => panic!()
                             };
                         }
@@ -316,6 +320,15 @@ impl TypeChecker {
             LeftUnary::TAKE_REFERENCE(take_reference) => {
                 let rhs = self.type_check_ast(&mut take_reference.rhs);
                 take_reference.rhs_type = rhs.unwrap(); // todo this is bad
+                let mut cloned = take_reference.rhs_type.clone();
+                if take_reference.rhs_type.reference {
+                    cloned.reference = true;
+                }else{
+                    cloned.reference = true;
+                }
+                println!("..... rhs_type {:?}", take_reference.rhs_type);
+                println!("..... cloned   {:?}", cloned);
+                return Some(cloned);
             }
         }
 

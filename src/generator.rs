@@ -385,8 +385,6 @@ impl CGenerator<'_> {
                         self.current_block().append_current("int* tmp = (int*) malloc(sizeof(234));\n".to_string());
 
 
-                        println!("...after {:?}", self.current_block());
-
                         // self.current_block().new_stmt_at(-1);
                         self.current_block().new_stmt();
                         self.current_block().append_current("*tmp = ".to_string());
