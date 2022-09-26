@@ -47,7 +47,8 @@ pub struct Identifier<'a> {
 #[derive(Debug)]
 pub struct TakeReference<'a> {
     pub rhs: Box<ParsedAST<'a>>,
-    pub rhs_type: Type
+    pub rhs_type: Type,
+    pub is_heap_alloc: bool
 }
 
 #[derive(Debug)]
@@ -396,7 +397,7 @@ impl Parser<'_> {
             self.consume(current);
             let rhs = self.call(current);
             let rhs_type = Type{mutability: Mutability::CONSTANT, primative: Primative::INCOMPLETE, reference: false};
-            return ParsedAST::LEFT_UNARY(LeftUnary::TAKE_REFERENCE(TakeReference{rhs: Box::new(rhs), rhs_type}))
+            return ParsedAST::LEFT_UNARY(LeftUnary::TAKE_REFERENCE(TakeReference{rhs: Box::new(rhs), rhs_type, is_heap_alloc: false}))
         }
 
         self.call(current)

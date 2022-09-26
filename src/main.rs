@@ -31,7 +31,7 @@ fn main() {
     let mut analyser = analyser::Analyser{};
     new_ast = analyser.analyse(new_ast);
 
-    let generator = generator::CGenerator::new(&new_ast);
+    let mut generator = generator::CGenerator::new(&new_ast);
     let code = generator.generate();
 
     let mut f = std::fs::File::create("/Users/james/dev/trove/build/build.cpp").expect("Unable to create file");

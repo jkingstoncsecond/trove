@@ -96,40 +96,42 @@ impl Analyser{
                             // todo this is all wrong as the ast is a bit fudged here!
                             
                             println!("HEAP_ALLOC_THRESHOLD reached!");
-                            let heap_alloc_fn = ParsedAST::IDENTIFIER("malloc".to_string());
-                            let heap_alloc_args = ParsedAST::NUMBER(rhs_type_size as f32);
-                            let heap_alloc_call = ParsedAST::CALL(
-                                Call{ callee: Box::new(heap_alloc_fn), args: vec![heap_alloc_args] });
-                            let identifier = Token::IDENTIFIER("tmp".to_string());
-                            let heap_alloc_decl = ParsedAST::DECL(
-                                Decl{ 
-                                    identifier: "tmp".to_string(), 
-                                    typ: Type{ mutability: Mutability::CONSTANT, primative: Primative::I32, reference: true }, 
-                                    requires_infering: false, 
-                                    value: Some(Box::new(heap_alloc_call)) 
-                                }
-                            );
-                            let heap_alloc_assign_lhs = ParsedAST::LEFT_UNARY(LeftUnary::TAKE_REFERENCE(
-                                TakeReference{
-                                    rhs: Box::new(ParsedAST::IDENTIFIER("tmp".to_string())), 
-                                    rhs_type: Type { mutability: Mutability::CONSTANT, primative: Primative::I32, reference: true }
-                                }
-                            ));
-                            // let rhs = value.rhs.as_mut();
-                            let heap_alloc_assign = ParsedAST::ASSIGN(
-                                Assign{ lhs: Box::new(heap_alloc_assign_lhs), rhs: Box::new(ParsedAST::NUMBER(1.2)) });
-                                // Assign{ lhs: Box::new(heap_alloc_assign_lhs), rhs: Box::new(rhs.) });
+
+                            value.is_heap_alloc = true;
+                            // let heap_alloc_fn = ParsedAST::IDENTIFIER("malloc".to_string());
+                            // let heap_alloc_args = ParsedAST::NUMBER(rhs_type_size as f32);
+                            // let heap_alloc_call = ParsedAST::CALL(
+                            //     Call{ callee: Box::new(heap_alloc_fn), args: vec![heap_alloc_args] });
+                            // let identifier = Token::IDENTIFIER("tmp".to_string());
+                            // let heap_alloc_decl = ParsedAST::DECL(
+                            //     Decl{ 
+                            //         identifier: "tmp".to_string(), 
+                            //         typ: Type{ mutability: Mutability::CONSTANT, primative: Primative::I32, reference: true }, 
+                            //         requires_infering: false, 
+                            //         value: Some(Box::new(heap_alloc_call)) 
+                            //     }
+                            // );
+                            // let heap_alloc_assign_lhs = ParsedAST::LEFT_UNARY(LeftUnary::TAKE_REFERENCE(
+                            //     TakeReference{
+                            //         rhs: Box::new(ParsedAST::IDENTIFIER("tmp".to_string())), 
+                            //         rhs_type: Type { mutability: Mutability::CONSTANT, primative: Primative::I32, reference: true }
+                            //     }
+                            // ));
+                            // // let rhs = value.rhs.as_mut();
+                            // let heap_alloc_assign = ParsedAST::ASSIGN(
+                            //     Assign{ lhs: Box::new(heap_alloc_assign_lhs), rhs: Box::new(ParsedAST::NUMBER(1.2)) });
+                            //     // Assign{ lhs: Box::new(heap_alloc_assign_lhs), rhs: Box::new(rhs.) });
                             
                             
-                                // todo set the left unary value?
-                            let block = ParsedAST::BLOCK(Block{
-                                new_scope: false,
-                                body: vec![
-                                    ParsedAST::STMT(Box::new(heap_alloc_decl)), 
-                                    ParsedAST::STMT(Box::new(heap_alloc_assign))
-                                ]
-                            });
-                            *left_unary_ast = block;    
+                            //     // todo set the left unary value?
+                            // let block = ParsedAST::BLOCK(Block{
+                            //     new_scope: false,
+                            //     body: vec![
+                            //         ParsedAST::STMT(Box::new(heap_alloc_decl)), 
+                            //         ParsedAST::STMT(Box::new(heap_alloc_assign))
+                            //     ]
+                            // });
+                            // *left_unary_ast = block;    
                         }
                     }
                 }
