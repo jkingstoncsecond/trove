@@ -136,7 +136,7 @@ impl TypeChecker {
             ParsedAST::PROGRAM(program) => self.type_check_program(program),
             ParsedAST::BLOCK(block) => self.type_check_block(block),
             ParsedAST::IF(iff) => self.type_check_if(iff),
-            ParsedAST::RET(ret) => None,
+            ParsedAST::RET(ret) => self.type_check_ret(ret),
             ParsedAST::DECL(decl) => self.type_check_decl(decl),
             ParsedAST::ASSIGN(assign) => self.type_check_assign(assign),
             ParsedAST::FN(func) => self.type_check_func(func),
@@ -186,6 +186,13 @@ impl TypeChecker {
         };
         // todo 
         None
+    }
+
+    fn type_check_ret(&mut self, ret: &mut Option<Box<ParsedAST>>) -> Option<Type> {
+        match ret {
+            Some(val) => self.type_check_ast(val),
+            None => None
+        }
     }
 
     fn type_check_assign(&mut self, assign: &mut Assign) -> Option<Type> {
