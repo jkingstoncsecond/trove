@@ -342,6 +342,33 @@ impl TypeChecker {
             self.type_check_ast(arg);
         }
 
+        let callee = call.callee.as_mut();
+        match callee {
+            ParsedAST::IDENTIFIER(identifier) => {
+                // todo declare these as builtin!
+                if !identifier.eq_ignore_ascii_case("println") {
+                    let t = self.sym_table.get(identifier.to_string());
+                    println!(".... ummm {:?}", identifier);
+                    match t {
+                        Some(typ) => {
+                            let typtyp = typ;
+                            match typtyp.primative.to_owned() {
+                                Primative::FN(func) => {
+                                    if func.return_type.is_some() {
+                                        return Some(*func.return_type.unwrap());
+                                    }
+                                    return None;
+                                },
+                                _ => return None
+                            }
+                        },
+                        None => panic!()
+                    }
+                }
+            },
+            _ => {}
+        }
+
         None
     }
 

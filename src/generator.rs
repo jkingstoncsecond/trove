@@ -326,6 +326,7 @@ impl CGenerator<'_> {
             Some(ast) => self.generate_ast(code, ast),
             None => {}
         }
+        self.current_block().append_current(";\n".to_string());
     }
 
     fn generate_assign<'a>(&mut self, code: &mut std::string::String, assign: &Assign){
