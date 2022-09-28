@@ -1,0 +1,8 @@
+heap_alloc_float fn @f32 {
+    ret @123.456
+}
+
+main fn i32 {
+    x mut = heap_alloc_float()
+    println(@x)
+}
