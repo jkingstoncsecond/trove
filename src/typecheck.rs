@@ -82,10 +82,16 @@ impl Type {
 
     pub fn size_in_bytes(&self) -> usize {
         // todo check if ref!
-        match self.primative {
+        match self.primative.to_owned() {
             Primative::U32 => 4,
             Primative::I32 => 4,
             Primative::F32 => 4,
+            Primative::STRUCT(strct) => {
+                // compute size of struct, we need the symbol table!
+                let mut size = 0;
+                size = 12;
+                size
+            },
             _ => panic!()
         }
     }
@@ -308,6 +314,7 @@ impl TypeChecker {
         // todo
 
         println!("ummm {:?}", self.sym_table);
+        println!("identifier {:?}", identifier);
 
         // Some(Type { mutability: Mutability::CONSTANT, primative: Primative::I32, reference: false })
         let t = self.sym_table.get(identifier.to_string()).unwrap();

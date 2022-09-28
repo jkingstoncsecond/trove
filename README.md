@@ -2,6 +2,8 @@
 trove programming language
 
 # todo
+- compute struct sizes
+- returning references code gen order is broken :(
 - parse floats (these cause issues in heap analysis)
 - escape codes
 - figure out a way of checking if an ast has a following statement (return x and #directive body)

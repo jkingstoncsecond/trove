@@ -109,8 +109,8 @@ impl Generator for CGenerator<'_> {
         self.generate_ast(&mut code, &self.ast);
 
         for block in self.blocks.iter() {
-            println!("block {:?}", block);
             for stmt in block.statements.iter() {
+                println!("---- {:?}", stmt);
                 code.push_str(stmt);
             }
         }
@@ -296,12 +296,14 @@ impl CGenerator<'_> {
 
     fn generate_block<'a>(&mut self, code: &mut std::string::String, block: &Block){
         if block.new_scope {
+            self.current_block().new_stmt();
             self.current_block().append_current("{".to_string());
         }
         for item in block.body.iter() {
             self.generate_ast(code, item);
         }
         if block.new_scope {
+            self.current_block().new_stmt();
             self.current_block().append_current("}".to_string());
         }
     }
@@ -321,6 +323,7 @@ impl CGenerator<'_> {
     }
 
     fn generate_ret<'a>(&mut self, code: &mut std::string::String, ret: &Option<Box<ParsedAST<'a>>>){
+        self.current_block().new_stmt();
         self.current_block().append_current("return ".to_string());
         match ret {
             Some(ast) => self.generate_ast(code, ast),
@@ -397,6 +400,7 @@ impl CGenerator<'_> {
                         self.generate_ast(code, &take_reference.rhs);
                         self.current_block().append_current(";".to_string());
 
+                        // :(
                         self.current_block().index = self.current_block().index + 1;
 
                         self.current_block().append_current("tmp".to_string());
