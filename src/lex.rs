@@ -292,7 +292,9 @@ impl Lexer {
 
     fn number(&mut self){
         let mut s = std::string::String::from("");
-        while !self.end() && self.program.chars().nth(self.current).unwrap().is_digit(10){
+        while !self.end() && 
+            (self.program.chars().nth(self.current).unwrap().is_digit(10) 
+            || (self.program.chars().nth(self.current).unwrap()=='.')){
             s.push(self.program.chars().nth(self.current).unwrap());
             self.current+=1;
         }

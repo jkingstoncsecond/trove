@@ -97,6 +97,12 @@ pub struct Directive<'a>{
 }
 
 #[derive(Debug)]
+pub enum Number {
+    INTEGER(i32),
+    FLOAT(f32)
+}
+
+#[derive(Debug)]
 pub enum ParsedAST<'a> {
     PROGRAM(Program<'a>),
     STMT(Box<ParsedAST<'a>>),
@@ -108,7 +114,7 @@ pub enum ParsedAST<'a> {
     IDENTIFIER(std::string::String),
     STRING(std::string::String),
     FN(Fn<'a>),
-    NUMBER(f32),
+    NUMBER(Number),
     LEFT_UNARY(LeftUnary<'a>),
     BINARY(Binary<'a>),
     GROUP(Group<'a>),
@@ -473,11 +479,11 @@ impl Parser<'_> {
             },
             Token::TRUE => {
                 self.consume(current);
-                ParsedAST::NUMBER(1.0)
+                ParsedAST::NUMBER(Number::INTEGER(1))
             },
             Token::FALSE => {
                 self.consume(current);
-                ParsedAST::NUMBER(0.0)
+                ParsedAST::NUMBER(Number::INTEGER(0))
             },
             Token::IDENTIFIER(identifier) => {
                 self.consume(current);
@@ -489,10 +495,12 @@ impl Parser<'_> {
             },
             Token::NUMBER(number) => {
                 self.consume(current);
-                match number.parse::<f32>(){
-                    Ok(num) => ParsedAST::NUMBER(num),
-                    _ => panic!()
+                if number.parse::<i32>().is_ok() {
+                    return ParsedAST::NUMBER(Number::INTEGER(number.parse::<i32>().unwrap()))
+                }else if number.parse::<f32>().is_ok() {
+                    return ParsedAST::NUMBER(Number::FLOAT(number.parse::<f32>().unwrap()))
                 }
+                panic!()
             },
             Token::LPAREN => {
                 self.consume(current);

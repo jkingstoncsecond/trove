@@ -11,6 +11,7 @@ use crate::parse::Group;
 use crate::parse::If;
 use crate::parse::LeftUnary;
 use crate::parse::LhsAccess;
+use crate::parse::Number;
 use crate::parse::ParsedAST;
 use crate::parse::Program;
 use crate::parse::Binary;
@@ -477,8 +478,11 @@ impl CGenerator<'_> {
 
     }
 
-    fn generate_number<'a>(&mut self, code: &mut std::string::String, number: &f32){
-        self.current_block().append_current(number.to_string())
+    fn generate_number<'a>(&mut self, code: &mut std::string::String, number: &Number){
+        match number {
+            Number::INTEGER(num) => self.current_block().append_current(num.to_string()),
+            Number::FLOAT(num) => self.current_block().append_current(num.to_string()),
+        }
     }
 
     fn generate_group<'a>(&mut self, code: &mut std::string::String, group: &Group){

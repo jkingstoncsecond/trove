@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-use crate::{parse::{ParsedAST, Program, Decl, Binary, Block, Fn as ParsedFn, If, Assign, LeftUnary, Call, Directive}, lex::Token};
+use crate::{parse::{ParsedAST, Program, Decl, Binary, Block, Fn as ParsedFn, If, Assign, LeftUnary, Call, Directive, Number}, lex::Token};
 
 #[derive(Debug)]
 pub struct SymTable<K,T>{
@@ -150,7 +150,7 @@ impl TypeChecker {
             ParsedAST::IDENTIFIER(identifier) => self.type_check_identifier(identifier),
             ParsedAST::STRING(s) => self.type_check_string(s),
             ParsedAST::LEFT_UNARY(left_unary) => self.type_check_left_unary(left_unary),//self.type_check_binary(binary),
-            ParsedAST::BINARY(binary) => None,//self.type_check_binary(binary),
+            ParsedAST::BINARY(binary) => self.type_check_binary(binary),
             ParsedAST::CALL(call) => self.type_check_call(call), // todo
             ParsedAST::STRUCT_TYPES_LIST(s) => None, // todo
             ParsedAST::LHS_ACCESS(lhs_access) => None, // todo
@@ -305,9 +305,11 @@ impl TypeChecker {
         }
     }
 
-    fn type_check_num(&self, num: &f32) -> Option<Type> {
-        // todo
-        Some(Type { mutability: Mutability::CONSTANT, primative: Primative::I32, reference: false })
+    fn type_check_num(&self, num: &Number) -> Option<Type> {
+        match num {
+            Number::INTEGER(_) => Some(Type { mutability: Mutability::CONSTANT, primative: Primative::I32, reference: false }),
+            Number::FLOAT(_) => Some(Type { mutability: Mutability::CONSTANT, primative: Primative::F32, reference: false })
+        }
     }
 
     fn type_check_identifier(&self, identifier: &std::string::String) -> Option<Type> {
