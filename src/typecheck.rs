@@ -215,7 +215,6 @@ impl TypeChecker {
 
             // }
 
-            panic!("types do not equal!");
         }
         // todo 
         // println!("ummm {:?}", lhs_type.unwrap().ref_can_be_assigned(rhs_type.unwrap()));
@@ -389,6 +388,7 @@ impl TypeChecker {
     }
 
     fn type_check_binary(&mut self, binary: &mut Binary) -> Option<Type> {
+        self.type_check_ast(&mut binary.right);
         // todo for now we just return the lhs
         return match self.type_check_ast(&mut binary.left) {
             Some(typ) => Some(typ),
