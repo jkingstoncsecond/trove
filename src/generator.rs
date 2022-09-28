@@ -97,11 +97,15 @@ impl Generator for CGenerator<'_> {
         void println(int* x){
             printf(\"ptr='%s'\\n\", (void*)x);
         } 
-        
+
         void println(int x){
             printf(\"%d\\n\", x);
         } 
         
+        void println(float x){
+            printf(\"%f\\n\", x);
+        } 
+
         void println(const char* arg){
             printf(\"%s\\n\", arg);
         }
@@ -390,7 +394,9 @@ impl CGenerator<'_> {
                         let mut lhs_type = take_reference.rhs_type.to_owned();
                         lhs_type.mutability = Mutability::MUTABLE;
                         self.generate_type(code, &lhs_type);
-                        self.current_block().append_current("* tmp = (int*) malloc(sizeof(".to_string());
+                        self.current_block().append_current("* tmp = (".to_string());
+                        self.generate_type(code, &lhs_type);
+                        self.current_block().append_current("*) malloc(sizeof(".to_string());
                         self.current_block().append_current(take_reference.rhs_type.size_in_bytes().to_string());
                         self.current_block().append_current("));\n".to_string());
 
