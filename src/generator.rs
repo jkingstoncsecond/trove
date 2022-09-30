@@ -255,6 +255,7 @@ impl CGenerator<'_> {
                     Type{primative: Primative::STRING, ..} => self.current_block().append_current("char*".to_string()),
                     Type{primative: Primative::STRUCT(identifier), ..} => self.current_block().append_current(identifier.to_string()),
                     Type{primative: Primative::INCOMPLETE, ..} => self.current_block().append_current("void".to_string()),
+                    Type{primative: Primative::DEPENDENT(dependent), ..} => self.current_block().append_current("void*".to_string()),
                     // Type{primative: Primative::TYPE(typeType), ..} => {
                     //     self.emit(code, "struct ".to_string());
                     //     // todo get the struct anonymouse name

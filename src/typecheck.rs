@@ -49,6 +49,11 @@ pub struct TypeType{
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Dependent{
+    pub anonymous_name: std::string::String
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Primative{
     INCOMPLETE,
     U32,
@@ -59,7 +64,8 @@ pub enum Primative{
     FN(Fn),
     BLOCK,
     TYPE(TypeType),
-    STRUCT(std::string::String)
+    STRUCT(std::string::String),
+    DEPENDENT(Dependent)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

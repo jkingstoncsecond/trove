@@ -1,5 +1,5 @@
 use crate::lex::Token;
-use crate::typecheck::{Type, Primative, Mutability, Fn as FnType, TypeType};
+use crate::typecheck::{Type, Primative, Mutability, Fn as FnType, TypeType, Dependent};
 
 #[derive(Debug)]
 pub struct Program<'a>{
@@ -202,11 +202,25 @@ impl Parser<'_> {
         match self.peek(current) { 
             // todo these are mut
             // todo fix this VAR
-            Token::VAR => {self.consume(current);return Type{reference, mutability, primative: Primative::INCOMPLETE}},
-            Token::U32 => {self.consume(current);return Type{reference, mutability, primative: Primative::U32}},
-            Token::I32 => {self.consume(current);return Type{reference, mutability, primative: Primative::I32}},
-            Token::F32 => {self.consume(current);return Type{reference, mutability, primative: Primative::F32}},
-            Token::BOOL => {self.consume(current);return Type{reference, mutability, primative: Primative::BOOL}},
+            Token::VAR => {self.consume(current);return Type{reference, mutability, primative: Primative::INCOMPLETE }},
+            Token::DOLLAR => {
+                self.consume(current);
+                // todo get the anonymouse name!
+                let anonymous_name = self.consume(current);
+                match anonymous_name {
+                    Token::IDENTIFIER(identifier) => {
+                        return Type{reference, mutability, primative: Primative::DEPENDENT(Dependent{
+                            anonymous_name: identifier.to_string()
+                        }) }
+                    },
+                    _ => panic!()
+                }
+                
+            },
+            Token::U32 => {self.consume(current);return Type{reference, mutability, primative: Primative::U32 }},
+            Token::I32 => {self.consume(current);return Type{reference, mutability, primative: Primative::I32 }},
+            Token::F32 => {self.consume(current);return Type{reference, mutability, primative: Primative::F32 }},
+            Token::BOOL => {self.consume(current);return Type{reference, mutability, primative: Primative::BOOL }},
             Token::FN => {
                 self.consume(current);
                 if self.expecting(Token::LPAREN, current) {
@@ -217,11 +231,11 @@ impl Parser<'_> {
                     self.consume(current);
                 }
                 return Type{reference, mutability, primative: Primative::FN(FnType{
-                    args: vec![], anonymous_name: "anon".to_string(), return_type: None})}
+                    args: vec![], anonymous_name: "anon".to_string(), return_type: None}),}
             },
-            Token::TYPE => {self.consume(current);return Type{reference, mutability, primative: Primative::TYPE(TypeType{anonymous_name: "anon".to_string()})}},
-            Token::IDENTIFIER(identifier) => {self.consume(current);return Type{reference, mutability, primative: Primative::STRUCT(identifier.to_string())}},
-            _ => Type{reference, mutability, primative: Primative::INCOMPLETE}
+            Token::TYPE => {self.consume(current);return Type{reference, mutability, primative: Primative::TYPE(TypeType{anonymous_name: "anon".to_string()}) }},
+            Token::IDENTIFIER(identifier) => {self.consume(current);return Type{reference, mutability, primative: Primative::STRUCT(identifier.to_string()) }},
+            _ => Type{reference, mutability, primative: Primative::INCOMPLETE }
         }
 
     }
@@ -308,7 +322,7 @@ impl Parser<'_> {
                         // return ParsedAST::DECL(Decl{identifier, typ, requires_infering: false, value})
                     },
                     // todo we need to match for a type here instead of identifier
-                    Token::AT |Token::VAR | Token::MUT | Token::CONST | Token::PUB | Token::PRIV | Token::U32 | Token::I32 | Token::F32 | Token::BOOL | Token::IDENTIFIER(_) => {
+                    Token::AT | Token::VAR | Token::DOLLAR | Token::MUT | Token::CONST | Token::PUB | Token::PRIV | Token::U32 | Token::I32 | Token::F32 | Token::BOOL | Token::IDENTIFIER(_) => {
 
                         let identifier = self.consume(current);
                         let typ = self.parse_type(current);
@@ -409,7 +423,7 @@ impl Parser<'_> {
         if self.expecting(Token::AT, current) {
             self.consume(current);
             let rhs = self.call(current);
-            let rhs_type = Type{mutability: Mutability::CONSTANT, primative: Primative::INCOMPLETE, reference: false};
+            let rhs_type = Type{mutability: Mutability::CONSTANT, primative: Primative::INCOMPLETE, reference: false };
             return ParsedAST::LEFT_UNARY(LeftUnary::TAKE_REFERENCE(TakeReference{rhs: Box::new(rhs), rhs_type, is_heap_alloc: false}))
         }
 
