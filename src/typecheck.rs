@@ -86,6 +86,58 @@ impl Type {
     // f32, we *can* cast the &f32 to a f32 by doing *f32 on the ptr.
     // if this returns true, we need to perform the dereferencing!
 
+    // this fn returns whether a type is dependent on some value e.g.
+    // type Foo { bar $T }
+    // is dependent
+    pub fn is_dependent(&self) -> bool{
+        match &self.primative {
+            Primative::INCOMPLETE => {return false;},
+            Primative::U32 => {return false;},
+            Primative::I32 => {return false;},
+            Primative::F32 => {return false;},
+            Primative::BOOL => {return false;},
+            Primative::STRING => {return false;},
+            Primative::FN(f) => {
+                // todo check the fn
+                let mut is_dependent = false;
+                if f.return_type.is_some() {
+                    if f.return_type.as_ref().unwrap().is_dependent() {
+                        is_dependent = true;
+                    }
+                    for arg in f.args.iter() {
+                        if arg.is_dependent() {
+                            is_dependent = true;
+                        }
+                    }
+                }
+                return is_dependent;
+            },
+            Primative::BLOCK => {
+                // todo
+                return false;
+            },
+            Primative::TYPE(typ) => {
+                let mut is_dependent = false;
+                // todo
+                // for t in typ.
+                //     if arg.is_dependent() {
+                //         is_dependent = true;
+                //     }
+                // }
+                return is_dependent;
+            },
+            Primative::STRUCT(s) => {
+                let mut is_dependent = false;
+                // todo
+                return is_dependent;
+            },
+            Primative::DEPENDENT(dependent) => {
+                return true;
+            }
+        }
+        false
+    }
+
     pub fn size_in_bytes(&self) -> usize {
         // todo check if ref!
         match self.primative.to_owned() {
@@ -301,7 +353,7 @@ impl TypeChecker {
         };
 
         self.sym_table.add(decl.identifier.to_string(), decl.typ.to_owned());
-
+        println!("decl {:?} is_dependent {:?}", decl.identifier, decl.typ.is_dependent());
         None
     }
 
