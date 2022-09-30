@@ -50,6 +50,7 @@ pub enum Token {
 
     IF,
     ELSE,
+    FOR,
 
     RET
 
@@ -151,6 +152,9 @@ impl Lexer {
                         self.current+=1; // its only 2 because we + 1 later
                     }else if self.is_keyword("f32".to_string()) {
                         self.tokens.push(Token::F32);
+                        self.current+=2; // its only 2 because we + 1 later
+                    }else if self.is_keyword("for".to_string()) {
+                        self.tokens.push(Token::FOR);
                         self.current+=2; // its only 2 because we + 1 later
                     }else{
                         // todo do identifier

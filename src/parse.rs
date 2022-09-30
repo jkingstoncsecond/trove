@@ -40,6 +40,11 @@ pub struct If<'a>{
 }
 
 #[derive(Debug)]
+pub struct For<'a>{
+    pub body: Box<ParsedAST<'a>>
+}
+
+#[derive(Debug)]
 pub struct Identifier<'a> {
     pub token: &'a Token
 }
@@ -108,6 +113,7 @@ pub enum ParsedAST<'a> {
     STMT(Box<ParsedAST<'a>>),
     BLOCK(Block<'a>),
     IF(If<'a>),
+    FOR(For<'a>),
     RET(Option<Box<ParsedAST<'a>>>),
     DECL(Decl<'a>),
     ASSIGN(Assign<'a>),
@@ -224,6 +230,7 @@ impl Parser<'_> {
         match self.peek(&current) {
             Token::LCURLY => self.block(current),
             Token::IF => self.if_stmt(current),
+            Token::FOR => self.for_stmt(current),
             Token::RET => self.ret(current),
             _ => ParsedAST::STMT(Box::new(self.expression(current)))
         }
@@ -564,7 +571,6 @@ impl Parser<'_> {
 
     fn if_stmt(&self, current: &mut usize) -> ParsedAST {
         
-        println!("doing if!");
         self.consume(current); // consume the if
         let condition = Box::new(self.expression(current));
         let body = Box::new(self.statement(current));
@@ -576,6 +582,22 @@ impl Parser<'_> {
         }
 
         return ParsedAST::IF(If{condition, body, else_body });
+    }
+
+    fn for_stmt(&self, current: &mut usize) -> ParsedAST {
+        
+        println!("doing for!");
+        self.consume(current); // consume the for
+        // let condition = Box::new(self.expression(current));
+        let body = Box::new(self.statement(current));
+        // let mut else_body: Option<Box<ParsedAST>> = None;
+
+        // if !self.end(current) && self.expecting(Token::ELSE, current) {
+        //     self.consume(current); // consume the else
+        //     else_body = Some(Box::new(self.statement(current)));
+        // }
+
+        return ParsedAST::FOR(For{body});
     }
 
     fn ret(&self, current: &mut usize) -> ParsedAST {

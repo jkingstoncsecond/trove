@@ -7,6 +7,7 @@ use crate::parse::Call;
 use crate::parse::Decl;
 use crate::parse::Directive;
 use crate::parse::Fn;
+use crate::parse::For;
 use crate::parse::Group;
 use crate::parse::If;
 use crate::parse::LeftUnary;
@@ -167,6 +168,9 @@ impl CGenerator<'_> {
              ParsedAST::IF(iff) => {
                  self.generate_if(code, &iff);
              },
+             ParsedAST::FOR(forr) => {
+                 self.generate_for(code, &forr);
+             },
              ParsedAST::RET(ret) => {
                  self.generate_ret(code, &ret);
              },
@@ -325,6 +329,11 @@ impl CGenerator<'_> {
             }
             None => {}
         }
+    }
+
+    fn generate_for<'a>(&mut self, code: &mut std::string::String, forr: &For){
+        self.current_block().append_current("while(1)".to_string());
+        self.generate_ast(code, &forr.body);
     }
 
     fn generate_ret<'a>(&mut self, code: &mut std::string::String, ret: &Option<Box<ParsedAST<'a>>>){

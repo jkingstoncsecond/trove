@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-use crate::{parse::{ParsedAST, Program, Decl, Binary, Block, Fn as ParsedFn, If, Assign, LeftUnary, Call, Directive, Number}, lex::Token};
+use crate::{parse::{ParsedAST, Program, Decl, Binary, Block, Fn as ParsedFn, If, Assign, LeftUnary, Call, Directive, Number, For}, lex::Token};
 
 #[derive(Debug)]
 pub struct SymTable<K,T>{
@@ -142,6 +142,7 @@ impl TypeChecker {
             ParsedAST::PROGRAM(program) => self.type_check_program(program),
             ParsedAST::BLOCK(block) => self.type_check_block(block),
             ParsedAST::IF(iff) => self.type_check_if(iff),
+            ParsedAST::FOR(forr) => self.type_check_for(forr),
             ParsedAST::RET(ret) => self.type_check_ret(ret),
             ParsedAST::DECL(decl) => self.type_check_decl(decl),
             ParsedAST::ASSIGN(assign) => self.type_check_assign(assign),
@@ -190,6 +191,18 @@ impl TypeChecker {
             Some(body) => {self.type_check_ast(body);},
             None => {}
         };
+        // todo 
+        None
+    }
+
+    fn type_check_for(&mut self, forr: &mut For) -> Option<Type> {
+        // println!("... if {:?}.", iff);
+        // self.type_check_ast(&mut iff.condition);
+        self.type_check_ast(&mut forr.body);
+        // match &mut iff.else_body {
+        //     Some(body) => {self.type_check_ast(body);},
+        //     None => {}
+        // };
         // todo 
         None
     }

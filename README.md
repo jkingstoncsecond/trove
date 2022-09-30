@@ -2,6 +2,8 @@
 trove programming language
 
 # todo
+- function overloading
+- external definitions
 - compute struct sizes
 - struct initialisers
 - figure out a way of checking if an ast has a following statement (return x and #directive body)
@@ -13,4 +15,3 @@ trove programming language
 - inline assembly
 - public/private
 - generics
-- external definitions
